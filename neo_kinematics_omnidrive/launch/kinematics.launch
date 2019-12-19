@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+	<!--robot platform-->
+	<!--base_drive_chain-->
+    <include file="$(find neo_mpo_700)/configs/kinematics/cob_base_drive_chain.launch"/>
+	<!--undercarriage_controll-->
+    <include file="$(find neo_mpo_700)/configs/kinematics/cob_undercarriage_control.launch"/>
+</launch>
+
+

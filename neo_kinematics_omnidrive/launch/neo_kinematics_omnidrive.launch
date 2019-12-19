@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- undercarriage_control_node -->
+	<rosparam command="load" file="$(find neo_kinematics_omnidrive)/launch/mpo_700_CanCtrl.yaml"/>
+	 <rosparam command="load" file="$(find neo_kinematics_omnidrive)/launch/mpo_700_Platform.yaml"/>
+	<node pkg="neo_kinematics_omnidrive" type="neo_kinematics_omnidrive_node" name="neo_kinematics_omnidrive_node" respawn="false" output="screen">
+
+
+	</node>
+</launch>
