@@ -1,0 +1,213 @@
+#Parameters for CanCtrl
+
+# 0: Can Peak Dongle
+# 1: Can Peak USB
+# 2: Can Peak ESD
+TypeCan:
+   Can: 1
+   DevicePath: /dev/pcan32
+CanCtrl:
+   NetESD: 0         #network of esd card (0 or 1)
+#Baudrate Code
+#0 = 1000K
+#2 = 500K
+#4 = 250k
+#6 = 125k
+#9 = 50k
+#11 = 20k
+#13 = 10k
+#If you want to use NetESD type in the hole number e.g. 1000 for 1000k
+   BaudrateVal: 0
+
+Time:
+   Sleeptime : 500000 #sleep time before arm homing procedure
+CanOpenIDs:
+   # Drive (can adresse motor 1)
+   TxPDO1_W1Drive: 0x182
+   TxPDO2_W1Drive: 0x282
+   RxPDO2_W1Drive: 0x302
+   TxSDO_W1Drive: 0x582
+   RxSDO_W1Drive: 0x602
+   # Steer (can adresse motor 2)
+   TxPDO1_W1Steer: 0x181
+   TxPDO2_W1Steer: 0x281
+   RxPDO2_W1Steer: 0x301
+   TxSDO_W1Steer: 0x581
+   RxSDO_W1Steer: 0x601
+   # Wheel 2
+   # Drive (can adresse motor 3)
+   TxPDO1_W2Drive: 0x184
+   TxPDO2_W2Drive: 0x284
+   RxPDO2_W2Drive: 0x304
+   TxSDO_W2Drive: 0x584
+   RxSDO_W2Drive: 0x604
+   # Steer (can adresse motor 4)
+   TxPDO1_W2Steer: 0x183
+   TxPDO2_W2Steer: 0x283
+   RxPDO2_W2Steer: 0x303
+   TxSDO_W2Steer: 0x583
+   RxSDO_W2Steer: 0x603
+   # Wheel 3
+   # Drive (can adresse motor 5)
+   TxPDO1_W3Drive: 0x186
+   TxPDO2_W3Drive: 0x286
+   RxPDO2_W3Drive: 0x306
+   TxSDO_W3Drive: 0x586
+   RxSDO_W3Drive: 0x606
+   # Steer (can adresse motor 6)
+   TxPDO1_W3Steer: 0x185
+   TxPDO2_W3Steer: 0x285
+   RxPDO2_W3Steer: 0x305
+   TxSDO_W3Steer: 0x585
+   RxSDO_W3Steer: 0x605
+   # Wheel 4
+   # Drive (can adresse motor 7)
+   TxPDO1_W4Drive: 0x188
+   TxPDO2_W4Drive: 0x288
+   RxPDO2_W4Drive: 0x308
+   TxSDO_W4Drive: 0x588
+   RxSDO_W4Drive: 0x608
+   # STeer (can adresse motor 8)
+   TxPDO1_W4Steer: 0x187
+   TxPDO2_W4Steer: 0x287
+   RxPDO2_W4Steer: 0x307
+   TxSDO_W4Steer: 0x587
+   RxSDO_W4Steer: 0x607
+Drive1:
+   EncIncrPerRevMot: 10000
+   VelMeasFrqHz: 1
+   GearRatio: 15
+   BeltRatio: 2
+   Sign: -1.0
+   VelMaxEncIncrS: 1000000
+   AccIncrS: 1000000 #80000
+   DecIncrS: 1000000 #80000
+   EncOffsetIncr: 0
+   IsSteering: false
+   CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
+   CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)
+   HomingDigIn: 9
+   HomingTimeout: 9000000 #in microseconds(9seconds)
+   Modulo: 1000000
+
+Steer1:
+   EncIncrPerRevMot: 10000
+   VelMeasFrqHz: 1
+   GearRatio: 19
+   BeltRatio: 1
+   Sign: 1.0
+   VelMaxEncIncrS: 1000000
+   AccIncrS: 1000000 #80000
+   DecIncrS: 1000000 #80000
+   EncOffsetIncr: 5562
+   IsSteering: true
+   CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
+   CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)
+   HomingDigIn: 9
+   HomingTimeout: 9000000
+   Modulo: 1000000
+
+Drive2:
+   EncIncrPerRevMot: 10000
+   VelMeasFrqHz: 1
+   GearRatio: 15
+   BeltRatio: 2
+   Sign: 1.0
+   VelMaxEncIncrS: 1000000
+   AccIncrS: 1000000 #80000
+   DecIncrS: 1000000 #80000
+   EncOffsetIncr: 0
+   IsSteering: false
+   CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
+   CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)
+   HomingDigIn: 9
+   HomingTimeout: 9000000
+   Modulo: 1000000
+   
+Steer2:
+   EncIncrPerRevMot: 10000
+   VelMeasFrqHz: 1
+   GearRatio: 19
+   BeltRatio: 1
+   Sign: -1.0
+   VelMaxEncIncrS: 1000000
+   AccIncrS: 1000000 #80000
+   DecIncrS: 1000000 #80000
+   EncOffsetIncr: -5684
+   IsSteering: true
+   CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
+   CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)
+   HomingDigIn: 9
+   HomingTimeout: 9000000
+   Modulo: 1000000
+   
+Drive3:
+   EncIncrPerRevMot: 10000
+   VelMeasFrqHz: 1
+   GearRatio: 15
+   BeltRatio: 2
+   Sign: -1.0
+   VelMaxEncIncrS: 1000000
+   AccIncrS: 1000000 #80000
+   DecIncrS: 1000000 #80000
+   EncOffsetIncr: 0
+   IsSteering: false
+   CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
+   CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)
+   HomingDigIn: 9
+   HomingTimeout: 9000000
+   Modulo: 1000000
+   
+Steer3:
+   EncIncrPerRevMot: 10000
+   VelMeasFrqHz: 1
+   GearRatio: 19
+   BeltRatio: 1
+   Sign: 1.0
+   VelMaxEncIncrS: 1000000
+   AccIncrS: 1000000 #80000
+   DecIncrS: 1000000 #80000
+   EncOffsetIncr: 5758
+   IsSteering: true
+   CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
+   CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)
+   HomingDigIn: 9
+   HomingTimeout: 9000000
+   Modulo: 1000000
+   
+Drive4:
+   EncIncrPerRevMot: 10000
+   VelMeasFrqHz: 1
+   GearRatio: 15
+   BeltRatio: 2
+   Sign: 1.0
+   VelMaxEncIncrS: 1000000
+   AccIncrS: 1000000 #80000
+   DecIncrS: 1000000 #80000
+   EncOffsetIncr: 0
+   IsSteering: false
+   CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
+   CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)
+   HomingDigIn: 9
+   HomingTimeout: 9000000
+   Modulo: 1000000
+   
+Steer4:
+   EncIncrPerRevMot: 10000
+   VelMeasFrqHz: 1
+   GearRatio: 19
+   BeltRatio: 1
+   Sign: -1.0
+   VelMaxEncIncrS: 1000000
+   AccIncrS: 1000000 #80000
+   DecIncrS: 1000000 #80000
+   EncOffsetIncr: -5441
+   IsSteering: true
+   CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
+   CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)
+   HomingDigIn: 9
+   HomingTimeout: 9000000
+   Modulo: 1000000
+   
+US:
+   ScaleToMM: 0.543

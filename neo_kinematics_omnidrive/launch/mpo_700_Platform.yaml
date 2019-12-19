@@ -1,0 +1,48 @@
+#Parameters for Platform configuration
+
+PublishEffort: false
+NumberOfMotors: 8
+NumberOfWheels: 4
+broadcast_tf: true
+
+DrivePrms:
+   MaxDriveRate: 12.267         #Maximum Rotational Rate for the Drive Wheels [rad/s]
+   MaxSteerRate: 24.4         #Maximum Rotational Rate for Steering Motion of the wheels [rad/s]
+   Wheel1SteerDriveCoupling: 0.0      #Coupling of Steer and Drive Motors of the Wheels (DriveVelo [rad/s] = SteerVelo [rad/s] * couplingRate)
+   Wheel2SteerDriveCoupling: 0.0      #sign gives direction : -0.5 means if direction of wheel changes by 180° position of drive wheel changes by -90°
+   Wheel3SteerDriveCoupling: 0.0
+   Wheel4SteerDriveCoupling: 0.0
+   Wheel1NeutralPosition: 180.0      #Orientation of Wheels after beeing homed
+   Wheel2NeutralPosition: 180.0      #in Degrees (Double-Value)
+   Wheel3NeutralPosition: 0.0
+   Wheel4NeutralPosition: 0.0
+Geom:
+   DistWheels: 480            #[mm]
+   RadiusWheel: 88            #[mm]
+   DistSteerAxisToDriveWheelCenter: 45   #[mm]
+   Wheel1XPos: 240            #
+   Wheel1YPos: 190            #
+   Wheel2XPos: -240
+   Wheel2YPos: 190
+   Wheel3XPos: -240
+   Wheel3YPos: -190
+   Wheel4XPos: 240
+   Wheel4YPos: -190
+Config:
+   Wheel1DriveMotor: 2         #0 = no motor; 1 = motor of the type neo; 2 = motor of type ham
+   Wheel2DriveMotor: 2
+   Wheel3DriveMotor: 2
+   Wheel4DriveMotor: 2
+   Wheel1SteerMotor: 2         
+   Wheel2SteerMotor: 2
+   Wheel3SteerMotor: 2
+   Wheel4SteerMotor: 2
+   GenericBufferLen: 512         #Buffer lenght for can communication
+Thread:
+   ThrUCarrCycleTimeS: 0.02
+SteerCtrl:
+   Spring: 15.0
+   Damp: 2.75
+   VirtMass: 0.1
+   DPhiMax: 10.0   
+   DDPhiMax: 40.0
