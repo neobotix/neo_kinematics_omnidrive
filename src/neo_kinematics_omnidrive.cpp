@@ -43,7 +43,6 @@ int loadingParams(const ros::NodeHandle &n)
     ROS_ERROR("FAILED to load Drive1-Modulo parameter from parameter server");
     return 1;
   }
-
   //-----------------------------steer1---------------------------------------------------------
   // loading steer1 params
   if (n.hasParam("CanOpenIDs/TxPDO1_W1Steer"))
@@ -1870,9 +1869,254 @@ int loadingParams(const ros::NodeHandle &n)
     return 1;
   }
 
+  // Loading parameters for kinematics 
+  if(n.hasParam("max_trans_velocity"))
+  {
+    n.getParam("max_trans_velocity", dTransMaxVelocity);
+  }
+  else
+  {
+    ROS_ERROR("FAILED to load max_trans_velocity parameter from parameter server");
+    return 1;    
+  }
 
+  if(n.hasParam("max_rot_velocity"))
+  {
+    n.getParam("max_rot_velocity", dRadMaxVelocity);
+  }
+  else
+  {
+    ROS_ERROR("FAILED to load max_rot_velocity parameter from parameter server");
+    return 1;    
+  }
 
+  if(n.hasParam("NumberOfMotors"))
+  {
+    n.getParam("NumberOfMotors", iNumOfJoints);
+  }
+  else
+  {
+    ROS_ERROR("FAILED to load max_rot_velocity parameter from parameter server");
+    return 1;    
+  }
+ 
+  if (n.hasParam("Geom/DistWheels"))
+        {
+          n.getParam("Geom/DistWheels", iWheelDistMM);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load wheel distance parameter from parameter server");
+    return 1;    
+  }
+
+  if (n.hasParam("Geom/RadiusWheel"))
+        {
+          n.getParam("Geom/RadiusWheel", iWheelRadiusMM);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load wheel radius parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("Geom/DistSteerAxisToDriveWheelCenter"))
+        {
+          n.getParam("Geom/DistSteerAxisToDriveWheelCenter", iSteerAxisDistToDriveWheelMM);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load steer axis distance parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("Geom/Wheel1XPos"))
+        {
+          n.getParam("Geom/Wheel1XPos", vdSteerPosWheelXMM[0]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load steer position of the wheel-1 X parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("Geom/Wheel1YPos"))
+        {
+          n.getParam("Geom/Wheel1YPos", vdSteerPosWheelYMM[0]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load steer position of the wheel-1 Y parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("Geom/Wheel2XPos"))
+        {
+          n.getParam("Geom/Wheel2XPos", vdSteerPosWheelXMM[1]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load steer position of the wheel-2 X parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("Geom/Wheel2YPos"))
+        {
+          n.getParam("Geom/Wheel2YPos", vdSteerPosWheelYMM[1]);
+        }
+   else
+  {
+    ROS_ERROR("FAILED to load steer position of the wheel-2 Y parameter from parameter server");
+    return 1;    
+  } 
+  if (n.hasParam("Geom/Wheel3XPos"))
+        {
+          n.getParam("Geom/Wheel3XPos", vdSteerPosWheelXMM[2]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load wheel-3 X parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("Geom/Wheel3YPos"))
+        {
+          n.getParam("Geom/Wheel3YPos", vdSteerPosWheelYMM[2]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load wheel-3 Y parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("Geom/Wheel4XPos"))
+        {
+          n.getParam("Geom/Wheel4XPos", vdSteerPosWheelXMM[3]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load wheel-4 X parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("Geom/Wheel4YPos"))
+        {
+          n.getParam("Geom/Wheel4YPos", vdSteerPosWheelYMM[3]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load wheel-3 Y parameter from parameter server");
+    return 1;    
+  }  
+  //DrivePrms
+  
+  if (n.hasParam("DrivePrms/MaxDriveRate"))
+        {
+          n.getParam("DrivePrms/MaxDriveRate", dMaxDriveRadS);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load MaxDriveRate parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("DrivePrms/MaxSteerRate"))
+        {
+          n.getParam("DrivePrms/MaxSteerRate", dMaxSteerRadS);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load MaxSteerRate parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("DrivePrms/Wheel1NeutralPosition"))
+  {
+     n.getParam("DrivePrms/Wheel1NeutralPosition", vdWheelNeutralPos[0]);
+  }
+  else
+  {
+    ROS_ERROR("FAILED to load Wheel1NeutralPosition parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("DrivePrms/Wheel2NeutralPosition"))
+        {
+          n.getParam("DrivePrms/Wheel2NeutralPosition", vdWheelNeutralPos[1]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load Wheel2NeutralPosition parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("DrivePrms/Wheel3NeutralPosition"))
+        {
+          n.getParam("DrivePrms/Wheel3NeutralPosition", vdWheelNeutralPos[2]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load Wheel3NeutralPosition parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("DrivePrms/Wheel4NeutralPosition"))
+        {
+          n.getParam("DrivePrms/Wheel4NeutralPosition", vdWheelNeutralPos[3]);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load Wheel4NeutralPosition parameter from parameter server");
+    return 1;    
+  }  
+  //Thread
+  
+  if (n.hasParam("Thread/ThrUCarrCycleTimeS"))
+        {
+          n.getParam("Thread/ThrUCarrCycleTimeS", dCmdRateSec);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load ThrUCarrCycleTimeS parameter from parameter server");
+    return 1;    
+  }  
+  //Motion Control
+  
+  if (n.hasParam("SteerCtrl/Spring"))
+        {
+          n.getParam("SteerCtrl/Spring", dSpring);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load Spring parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("SteerCtrl/Damp"))
+        {
+          n.getParam("SteerCtrl/Damp", dDamp);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load Damp parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("SteerCtrl/VirtMass"))
+        {
+          n.getParam("SteerCtrl/VirtMass", dVirtualMass);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load VirtMass parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("SteerCtrl/DPhiMax"))
+        {
+          n.getParam("SteerCtrl/DPhiMax", dDPhiMax);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load DPhiMax parameter from parameter server");
+    return 1;    
+  }  
+  if (n.hasParam("SteerCtrl/DDPhiMax"))
+        {
+          n.getParam("SteerCtrl/DDPhiMax", dDDPhiMax);
+        }
+  else
+  {
+    ROS_ERROR("FAILED to load DDPhiMax parameter from parameter server");
+    return 1;    
+  }
 //------------------------------------------------------------------------------------------------------------
+
+
 
 
  return 0;
@@ -2021,10 +2265,99 @@ bool er(double no, double pos)
     return homing;
 }
 
+void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg)
+{
+  int iJointNumberSize;
+  std::vector<double> dDriveJointPosRad, dDriveJointVelRadS, dDriveJointEffort; // Vectors for storing position, velocity and effort for the drive module
+  std::vector<double> dSteerJointPosRad, dSteerJointVelRadS, dSteerJointEffort; // Vectors for storing position, velocity and effort for the steer module
+
+  TOdomStamp =  msg->header.stamp;
+  iJointNumberSize = msg->joint_names.size();
+
+// Drive joints
+  dDriveJointPosRad.assign(iNumOfJoints, 0.0);
+  dDriveJointVelRadS.assign(iNumOfJoints, 0.0);
+  dDriveJointEffort.assign(iNumOfJoints, 0.0);
+
+// Steer joints
+  dSteerJointPosRad.assign(iNumOfJoints, 0.0);
+  dSteerJointVelRadS.assign(iNumOfJoints, 0.0);
+  dSteerJointEffort.assign(iNumOfJoints, 0.0);
+
+// Assigning messages recieved to the respective drive joints
+  for(int i = 0; i < iJointNumberSize; i++)
+  {
+    for(int j = 0; j < iJointNumberSize; j++)
+    {
+      if(msg->joint_names[j] ==  "fl_caster_r_wheel_joint")
+      {
+        dDriveJointPosRad[i] = msg->actual.positions[j]; 
+        dDriveJointVelRadS[i] = msg->actual.velocities[j]; 
+        // dDriveJointEffort[i] = msg->effort;
+      }
+    }
+  }
+
+// Assigning messages recieved to the respective steer joints
+  for(int i = 0; i < iJointNumberSize; i++)
+  {
+    for(int j = 0; j < iJointNumberSize; j++)
+    {
+      if(msg->joint_names[j] ==  "fl_caster_r_wheel_joint")
+      {
+        dSteerJointPosRad[i] = msg->actual.positions[j]; 
+        dSteerJointVelRadS[i] = msg->actual.velocities[j]; 
+        // dDriveJointEffort[i] = msg->effort;
+      }
+    }
+  }
+
+
+
+}
+
+void NeoKinematicsOmniDrive::topicCBTwistCmd(const geometry_msgs::Twist::ConstPtr& msg)
+{
+  double dVel_x_cmd,  dVel_y_cmd, dVel_rad_cmd;
+
+    if( (fabs(msg->linear.x) > dTransMaxVelocity) || (fabs(msg->linear.y) > dTransMaxVelocity) || (fabs(msg->angular.z) > dRadMaxVelocity))
+    {
+      if((fabs(msg->linear.x) > dTransMaxVelocity))
+      {  
+        ROS_DEBUG_STREAM("Stopping the robot, because the recieved velocity is "<< msg->linear.x << "mm/s is greater than the allowed maximum velocity of" << dTransMaxVelocity << "mm/s");
+      }
+      if((fabs(msg->linear.y) > dTransMaxVelocity))
+      {
+        ROS_DEBUG_STREAM("Stopping the robot, because the recieved velocity is "<< msg->linear.y << "mm/s is greater than the allowed maximum velocity of" << dTransMaxVelocity << "mm/s");
+      }
+      if((fabs(msg->angular.z) > dRadMaxVelocity))
+      {
+        ROS_DEBUG_STREAM("Stopping the robot, because the recieved velocity is "<< msg->angular.z << "mm/s is greater than the allowed maximum velocity of" << dRadMaxVelocity << "mm/s");
+      }
+    }
+    else
+    {
+      // Converting to SI units m/s 
+      dVel_x_cmd = msg->linear.x * 1000.0;
+      dVel_y_cmd = msg->linear.y * 1000.0;
+      dVel_rad_cmd = msg->angular.z;
+
+    }
+    if(bIsIntialised == true)
+    {
+      ROS_INFO_ONCE("received new velocity command [cmdVelX=%3.5f,cmdVelY=%3.5f,cmdVelTh=%3.5f]", 
+            msg->linear.x, msg->linear.y, msg->angular.z);
+      // kinematics -> SetCommandedPltVelocity(dVel_x_cmd,  dVel_y_cmd, dVel_rad_cmd)
+    }
+    else
+    {
+      // kinematics -> SetCommandedPltVelocity(0, 0, 0)
+    }
+}
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "NeoKinOmnidrive");                    //initialize ros node  
-  ros::NodeHandle n;                                           //ros node handle
+  NeoKinematicsOmniDrive NK1;                                  //ros node handle
   std::vector <int> viRet,viRet1,viRet2,viRet3,viRet4;                                     //vector that stores the return value of recMessages() function
   int iTimeElapsed,iTimeSleep;                                 //variable to store elapsed time
   std::chrono::steady_clock::time_point aStart,aStartTime, aStartTime1;     //aStart stores the start time for homing
@@ -2040,7 +2373,7 @@ int main(int argc, char** argv)
   
 
   //loading all the required params from yaml file
-  if(!(loadingParams(n) == 0))
+  if(!(loadingParams(NK1.n) == 0))
   {
     ROS_ERROR("Error occured while loading the params");
     return -1;
@@ -2113,8 +2446,8 @@ int main(int argc, char** argv)
    }
    int state = 1;
    //ros serviceserver for homing
-   ros::ServiceServer srvServer_Homing = n.advertiseService("start_homing", srvCallback_Homing);
-   ros::Subscriber topicPub_isEmergencyStop = n.subscribe("state", 1000, EmgCB);
+   ros::ServiceServer srvServer_Homing = NK1.n.advertiseService("start_homing", srvCallback_Homing);
+   ros::Subscriber topicPub_isEmergencyStop = NK1.n.subscribe("state", 1000, EmgCB);
    ros::Rate loop_rate(100);
    double m_d0 = 1;
    bool homing = true;
@@ -2126,12 +2459,6 @@ int main(int argc, char** argv)
    bool status2;
    bool status3;
    bool status4;
-   bool bhm_done = 0;
-   bool bhm_done2 = 0;
-   bool bhm_done3 = 0;
-   bool bhm_done4 = 0;
-   bool f1 = true;
-   bool f2,f3,f4;
 
    while (ros::ok())
    {  
@@ -2251,8 +2578,9 @@ int main(int argc, char** argv)
             // std::cout<<flag<<std::endl;
             ROS_INFO_ONCE("Pre homing is not done - Debug");
 
+          }
+          aStartTime = std::chrono::steady_clock::now();
         }
-          aStartTime = std::chrono::steady_clock::now();}
         else
         {
           ROS_WARN_ONCE("EM active");
@@ -2349,21 +2677,23 @@ int main(int argc, char** argv)
         if(status1*status2*status3*status4 == 1 )
           {
             ROS_INFO_ONCE("Homing signal recieved");
-            m_iDriveState = ST_RUNNING;
+            m_iDriveState = ST_ERROR_CORRECTION;
           // m_iDriveState = ST_DRIVE_INIT;
-
           }
         }
       }
 
       }
 
-      else if( m_iDriveState == ST_RUNNING)
+      else if( m_iDriveState == ST_ERROR_CORRECTION)
       {
         // auto aEndTime = std::chrono::steady_clock::now();
         // iTimeSleep = std::chrono::duration_cast<std::chrono::microseconds>( aEndTime - aStartTime ).count();
         // // Waiting fot the homing to finish
         // if(iTimeSleep>2000000)
+
+        //Todo Need to change the sleep with a efficient time function.
+
 
         ROS_INFO_ONCE("Errors?");
         aStartTime1 = std::chrono::steady_clock::now();
@@ -2393,7 +2723,12 @@ int main(int argc, char** argv)
         usleep(20000);
 
         DM4.recMessages();
+        m_iDriveState == ST_RUNNING;
 
+      }
+      else if(m_iDriveState == ST_RUNNING)
+      {
+        bIsIntialised = true;
       }
       else if(m_iDriveState == ST_EMERGENCY)
       {

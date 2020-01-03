@@ -6,9 +6,66 @@
 #include <neo_kinematics_omnidrive/NeoOmniDriveErrors.h>
 #include <chrono>
 //ros services
-#include <neo_kinematics_omnidrive/Homing.h>
-#include<vector>
 #include "neo_msgs/EmergencyStopState.h"
+#include <neo_kinematics_omnidrive/Homing.h>
+#include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <control_msgs/JointTrajectoryControllerState.h>
+
+#include <neo_kinematics_omnidrive/NeoKinematics.h>
+
+
+class NeoKinematicsOmniDrive
+{
+
+	public:
+	// Publisher initialisation
+
+		ros::Publisher pub_Joint_controller;
+		ros::Publisher pub_Odometry;
+  		ros::NodeHandle n;   //ros node handle
+
+	// Subscriber initialisation
+
+		ros::Subscriber sub_Commanded_Twist;
+		ros::Subscriber sub_Joint_States;
+		ros::Time TOdomStamp;	
+
+
+
+	// Constructor declaration 
+		NeoKinematicsOmniDrive()
+		{
+
+		// Publishers
+
+			// Joint trajectory controller allows us to control a joint by it's position, velocity or effort. 
+			pub_Joint_controller =  n.advertise<control_msgs::JointTrajectoryControllerState> ("joint_command", 1);
+
+			// Navigation - Odometry 
+			pub_Odometry = n.advertise<nav_msgs::Odometry>("odometry", 1);
+
+		// Subscribers
+
+			// Subscribers for the user's command velocity, that the robot need to process.
+			sub_Commanded_Twist = n.subscribe("cmd_vel", 1, &NeoKinematicsOmniDrive::topicCBTwistCmd, this); 
+
+			// Recieves the joint states. Used for inverse kinematics calculation.
+			sub_Joint_States = n.subscribe("joint_state", 1, &NeoKinematicsOmniDrive::topicCBJointStates, this); 
+
+		}
+
+		~NeoKinematicsOmniDrive(){}
+
+		// Setting up the callbacks
+
+		void topicCBJointStates(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg);
+
+		void topicCBTwistCmd(const geometry_msgs::Twist::ConstPtr& msg);
+		
+
+};
 
 /*
  *params for all motor and gear combination
@@ -56,6 +113,7 @@ enum StatesOfDrive
  ST_CONFIGURE_HOMING,
  ST_ARM_HOMING,
  ST_WAIT_FOR_HOMING,
+ ST_ERROR_CORRECTION,
  ST_RECTIFYING,
  ST_RUNNING,
  ST_EMERGENCY
@@ -82,7 +140,7 @@ DriveModule DM3;
 DriveModule DM4;
 
 
-//variable for homing statess
+//variable for homing states
 int m_iDriveState;
 int m_iStoreState;
 
@@ -94,5 +152,43 @@ int iSleepTime;
 int flag =0;
 std::vector<bool> vBflag;
 bool bEMstate = 0;
+
+// Number of joints
+int iNumOfJoints; 
+
+//Variables for kinematic parameters
+double dTransMaxVelocity, dRadMaxVelocity;
+
+// Variable to check control initalisation
+bool bIsIntialised = false;
+
+// Geometrical Parameters
+int iWheelDistMM;
+int iWheelRadiusMM;
+int iSteerAxisDistToDriveWheelMM;
+double dCmdRateSec;
+double dSpring;
+double dDamp;
+double dVirtualMass;
+double dDPhiMax;
+double dDDPhiMax;
+double dMaxDriveRadS;
+double dMaxSteerRadS;
+
+// Position of the wheels steering axis in cartesian and polar co-ordinates relative to the robot co-ordinate system
+std::vector<double> vdSteerPosWheelXMM;
+std::vector<double> vdSteerPosWheelYMM;
+std::vector<double> vdSteerWheelDistMM;
+std::vector<double> vdSteerWheelAngRad;
+
+// Position of the wheels in cartesian and polar co-ordinates relative to the robot co-ordinate system
+std::vector<double> vdPosWheelXMM;
+std::vector<double> vdPosWheelYMM;
+std::vector<double> vdWheelDistMM;
+std::vector<double> vdWheelAngRad;
+
+// Neutral wheel Position 
+std::vector<double> vdWheelNeutralPos;
+
 
 #endif

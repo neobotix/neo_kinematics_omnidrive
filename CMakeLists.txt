@@ -11,7 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  neo_msgs
+  tf2
+  tf2_ros
   message_generation
 )
 
@@ -73,7 +74,6 @@ find_package(catkin REQUIRED COMPONENTS
  generate_messages(
    DEPENDENCIES
    std_msgs
-   neo_msgs
  )
 
 ################################################
@@ -108,7 +108,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES neo_kinematics_omnidrive
-  CATKIN_DEPENDS roscpp rospy std_msgs neo_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -125,7 +125,7 @@ include_directories(
 
 ## Declare a C++ library
  add_library(${PROJECT_NAME}
-   src/DriveModule.cpp src/ElmoMotorCtrl.cpp src/SocketCan.cpp
+   src/DriveModule.cpp src/ElmoMotorCtrl.cpp src/SocketCan.cpp src/neo_kinematics.cpp
  )
 
 
@@ -137,8 +137,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-#add_executable(NeoKinOmidrive_node src/NeoKinOmnidrive.cpp)
 add_executable(${PROJECT_NAME}_node src/${PROJECT_NAME}.cpp)
+
 
 
 ## Rename C++ executable without prefix
@@ -162,8 +162,6 @@ add_executable(${PROJECT_NAME}_node src/${PROJECT_NAME}.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}
   ${catkin_LIBRARIES} 
 )
-
-
  ## Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}_node ${PROJECT_NAME} 
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
