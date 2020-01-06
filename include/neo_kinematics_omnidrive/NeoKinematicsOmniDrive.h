@@ -32,7 +32,9 @@ class NeoKinematicsOmniDrive
 		ros::Subscriber sub_Joint_States;
 		ros::Time TOdomStamp;	
 
+	// Object initialisation for the class NeoKinematics 
 
+		NeoKinematics NC1;
 
 	// Constructor declaration 
 		NeoKinematicsOmniDrive()
@@ -190,5 +192,6 @@ std::vector<double> vdWheelAngRad;
 // Neutral wheel Position 
 std::vector<double> vdWheelNeutralPos;
 
-
+// Flag for not running the state machine after homing
+int iFST_Running = 0;
 #endif

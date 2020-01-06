@@ -14,10 +14,11 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   message_generation
+
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(neo_utilities)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -107,7 +108,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES neo_kinematics_omnidrive
+  LIBRARIES neo_kinematics_omnidrive 
   CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -152,9 +153,9 @@ add_executable(${PROJECT_NAME}_node src/${PROJECT_NAME}.cpp)
 #add_dependencies(neo_kinematics_omnidrive ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- #target_link_libraries(neo_kinematics_omnidrive
-  # ${catkin_LIBRARIES}
- #)
+ target_link_libraries(neo_kinematics_omnidrive neo_utilities
+   ${catkin_LIBRARIES}
+ )
 
 #target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 

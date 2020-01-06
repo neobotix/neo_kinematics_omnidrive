@@ -2347,11 +2347,11 @@ void NeoKinematicsOmniDrive::topicCBTwistCmd(const geometry_msgs::Twist::ConstPt
     {
       ROS_INFO_ONCE("received new velocity command [cmdVelX=%3.5f,cmdVelY=%3.5f,cmdVelTh=%3.5f]", 
             msg->linear.x, msg->linear.y, msg->angular.z);
-      // kinematics -> SetCommandedPltVelocity(dVel_x_cmd,  dVel_y_cmd, dVel_rad_cmd)
+      NC1.InverseVelKinematics(dVel_x_cmd,  dVel_y_cmd, dVel_rad_cmd);
     }
     else
     {
-      // kinematics -> SetCommandedPltVelocity(0, 0, 0)
+      NC1.InverseVelKinematics(0, 0, 0);
     }
 }
 int main(int argc, char** argv)
@@ -2368,9 +2368,6 @@ int main(int argc, char** argv)
   vdPosGearRad.resize(2,0);
   vdVelGearRadS.resize(2,0);
   vdTorGear.resize(2,0);
-
-
-  
 
   //loading all the required params from yaml file
   if(!(loadingParams(NK1.n) == 0))
@@ -2459,6 +2456,11 @@ int main(int argc, char** argv)
    bool status2;
    bool status3;
    bool status4;
+
+// Parameters initialisation for Kinematics calculation
+   NK1.NC1.InitParams(iNumOfJoints, iWheelDistMM,  iWheelRadiusMM, dTransMaxVelocity,  dRadMaxVelocity,  iSteerAxisDistToDriveWheelMM, 
+       dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
+      vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
 
    while (ros::ok())
    {  
@@ -2630,7 +2632,7 @@ int main(int argc, char** argv)
             DM4.armHoming();
             m_iDriveState = ST_WAIT_FOR_HOMING;
           }
-                }
+        }
         else
         {
           ROS_WARN_ONCE("EM active");
@@ -2729,6 +2731,11 @@ int main(int argc, char** argv)
       else if(m_iDriveState == ST_RUNNING)
       {
         bIsIntialised = true;
+        if(bIsIntialised == true && iFST_Running>=1)
+        {
+        NK1.NC1.InitialiseWheelPosition();  
+        iFST_Running++;
+        }
       }
       else if(m_iDriveState == ST_EMERGENCY)
       {
