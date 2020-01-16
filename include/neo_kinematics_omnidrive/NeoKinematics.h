@@ -78,8 +78,8 @@ public:
 					std::vector<double> vdSteerPosWheelXMM, std::vector<double> vdSteerPosWheelYMM,
 					std::vector<double> vdWheelNeutralPos);
 	void InitialiseWheelPosition();
-	void InverseVelKinematics(double dVel_x_cmd,  double dVel_y_cmd, double dVel_rad_cmd);
-	void ForwardVelKinematics(std::vector<double> vdDriveGearVelRadS,std::vector<double> vdSteerGearVelRadS,std::vector<double> vdDriveGearDltAngRad,std::vector<double> vdSteerGearAngRad);
+	void SetRequiredVelocity(double dVel_x_cmd,  double dVel_y_cmd, double dVel_rad_cmd);
+	void SetRequiredWheelPoses(std::vector<double> vdDriveGearVelRadS,std::vector<double> vdSteerGearVelRadS,std::vector<double> vdDriveGearDltAngRad,std::vector<double> vdSteerGearAngRad);
 	void GetPltfVel(double dDeltaVel_x,  double dDeltaVel_y, double dDeltaVel_rad,double dVel_x_cmd,  double dVel_y_cmd, double dVel_rad_cmd);
 	void GetRefreshedCtrlState(	std::vector<double> m_vdDriveGearVelRadS, std::vector<double> m_vdSteerGearVelRadS, std::vector<double> m_vdSteerGearAngRad, double m_dVel_x_cmd, double m_dVel_y_cmd, double m_dVel_rad_cmd);
 
@@ -91,6 +91,9 @@ NeoKinematics();
 
 private:
 
+	void InverseKinematicsCalc();
+	void ForwardKinematicsCalc();
+	void CtrlStepCalc();
 	void WheelPositionCalc();
 
 

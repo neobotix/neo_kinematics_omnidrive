@@ -12,76 +12,15 @@
 #include <nav_msgs/Odometry.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <control_msgs/JointTrajectoryControllerState.h>
-
+#include "tf2/transform_datatypes.h"
 #include <neo_kinematics_omnidrive/NeoKinematics.h>
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "tf2/transform_datatypes.h"
+#include<NeoMath.h>
+#include <sensor_msgs/JointState.h>
 
 
-class NeoKinematicsOmniDrive
-{
 
-	public:
-	// Publisher initialisation
-
-		ros::Publisher pub_Joint_controller;
-		ros::Publisher pub_Odometry;
-  		ros::NodeHandle n;   //ros node handle
-
-	// Subscriber initialisation
-
-		ros::Subscriber sub_Commanded_Twist;
-		ros::Subscriber sub_Joint_States;
-		ros::Time TOdomStamp;	
-
-	// Object initialisation for the class NeoKinematics 
-
-		NeoKinematics NC1;
-		ros::Time last_time;
-
-	// Variables for odom update
-		double dPos_X, dPos_Y, dPos_Rad; 
-
-		double dVel_X_now, dVel_Y_now, dVel_Rad_now;
-
-	// Constructor declaration 
-		NeoKinematicsOmniDrive()
-		{
-		// Variable declaration
-
-
-		// Publishers
-
-			// Joint trajectory controller allows us to control a joint by it's position, velocity or effort. 
-			pub_Joint_controller =  n.advertise<control_msgs::JointTrajectoryControllerState> ("joint_command", 1);
-
-			// Navigation - Odometry 
-			pub_Odometry = n.advertise<nav_msgs::Odometry>("odometry", 1);
-
-		// Subscribers
-
-			// Subscribers for the user's command velocity, that the robot need to process.
-			sub_Commanded_Twist = n.subscribe("cmd_vel", 1, &NeoKinematicsOmniDrive::topicCBTwistCmd, this); 
-
-			// Recieves the joint states. Used for inverse kinematics calculation.
-			sub_Joint_States = n.subscribe("joint_state", 1, &NeoKinematicsOmniDrive::topicCBJointStates, this); 
-
-		}
-
-		~NeoKinematicsOmniDrive(){}
-
-		// Setting up the callbacks
-
-		void topicCBJointStates(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg);
-
-		void topicCBTwistCmd(const geometry_msgs::Twist::ConstPtr& msg);
-
-		// Setting up other functionalities
-
-		void CalcCtrlStep();
-
-		void Update_Odom();
-		
-
-};
 
 /*
  *params for all motor and gear combination
@@ -214,4 +153,94 @@ std::vector<double> vdWheelNeutralPos;
 
 // Flag for not running the state machine after homing
 int iFST_Running = 0;
+
+class NeoKinematicsOmniDrive
+{
+
+	public:
+	// Publisher initialisation
+
+		ros::Publisher pubJointStates;
+		ros::Publisher pubJointControllerStates;
+		ros::Publisher pub_Joint_controller;
+		ros::Publisher pub_Odometry;
+  		ros::NodeHandle n;   //ros node handle
+
+	// Subscriber initialisation
+
+		ros::Subscriber sub_Commanded_Twist;
+		ros::Subscriber sub_Joint_States;
+		ros::Subscriber sub_Joint_command;
+		ros::Time TOdomStamp;	
+
+	// Object initialisation for the class NeoKinematics 
+
+		NeoKinematics NC1;
+		ros::Time last_time;
+
+	// Variables for odom update
+		double dPos_X, dPos_Y, dPos_Rad; 
+
+		double dVel_X_last, dVel_Y_last, dVel_Rad_last;
+
+		bool bBroadcast_tf;
+
+	 	tf2_ros::TransformBroadcaster tfBroadcast_odometry;	
+
+		ros::Time joint_state_odom_stamp;
+
+		ros::Timer timer_ctrl_step_;
+
+	// Constructor declaration 
+		NeoKinematicsOmniDrive()
+		{
+		// Variable declaration
+
+
+		// Publishers
+
+		pubJointStates = n.advertise<sensor_msgs::JointState>("/joint_states", 1);
+
+		pubJointControllerStates =  n.advertise<control_msgs::JointTrajectoryControllerState>("/state1", 1);
+		// Joint trajectory controller allows us to control a joint by it's position, velocity or effort. 
+		pub_Joint_controller =  n.advertise<control_msgs::JointTrajectoryControllerState> ("joint_command", 1);
+
+	// 	// Navigation - Odometry 
+		pub_Odometry = n.advertise<nav_msgs::Odometry>("odometry", 1);
+
+	// // Subscribers
+
+		// Subscribers for the user's command velocity, that the robot need to process.
+		// sub_Commanded_Twist = n.subscribe("cmd_vel", 1, &NeoKinematicsOmniDrive::topicCBTwistCmd, this); 
+
+		// Recieves the joint states. Used for inverse kinematics calculation.
+		sub_Joint_States = n.subscribe("/state1", 1, &NeoKinematicsOmniDrive::topicCBJointStates, this); 
+
+		// timer_ctrl_step_ = n.createTimer(ros::Duration(dSample_time), &NeoKinematicsOmniDrive::timerCallbackCtrlStep, this);
+
+
+		}
+
+		~NeoKinematicsOmniDrive(){}
+
+		// Setting up the callbacks
+
+		void topicCBJointStates(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg);
+
+		void topicCBTwistCmd(const geometry_msgs::Twist::ConstPtr& msg);
+
+		void timerCallbackCtrlStep(const ros::TimerEvent& e); 
+
+		// Setting up other functionalities
+
+		bool JointStatesMeasure();
+
+		void CalcCtrlStep();
+
+		void Update_Odom();
+
+
+		
+
+};
 #endif
