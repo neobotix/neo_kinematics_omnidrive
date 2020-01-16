@@ -35,10 +35,18 @@ class NeoKinematicsOmniDrive
 	// Object initialisation for the class NeoKinematics 
 
 		NeoKinematics NC1;
+		ros::Time last_time;
+
+	// Variables for odom update
+		double dPos_X, dPos_Y, dPos_Rad; 
+
+		double dVel_X_now, dVel_Y_now, dVel_Rad_now;
 
 	// Constructor declaration 
 		NeoKinematicsOmniDrive()
 		{
+		// Variable declaration
+
 
 		// Publishers
 
@@ -65,6 +73,12 @@ class NeoKinematicsOmniDrive
 		void topicCBJointStates(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg);
 
 		void topicCBTwistCmd(const geometry_msgs::Twist::ConstPtr& msg);
+
+		// Setting up other functionalities
+
+		void CalcCtrlStep();
+
+		void Update_Odom();
 		
 
 };
@@ -176,6 +190,12 @@ double dDPhiMax;
 double dDDPhiMax;
 double dMaxDriveRadS;
 double dMaxSteerRadS;
+
+// For calculation of ctrl_step
+double dTimeout;
+double dSample_time = 0.020;
+int iWatchdog = 0;
+
 
 // Position of the wheels steering axis in cartesian and polar co-ordinates relative to the robot co-ordinate system
 std::vector<double> vdSteerPosWheelXMM;

@@ -1870,6 +1870,16 @@ int loadingParams(const ros::NodeHandle &n)
   }
 
   // Loading parameters for kinematics 
+  if(n.hasParam("timeout"))
+  {
+    n.getParam("timeout", dTimeout);
+    ROS_INFO("Timeout loaded from Parameter-Server is: %fs", dTimeout);
+  }
+  else
+  {
+    ROS_ERROR("FAILED to load timeout parameter from parameter server");
+  }
+
   if(n.hasParam("max_trans_velocity"))
   {
     n.getParam("max_trans_velocity", dTransMaxVelocity);
@@ -2265,24 +2275,25 @@ bool er(double no, double pos)
     return homing;
 }
 
+
 void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg)
 {
   int iJointNumberSize;
-  std::vector<double> dDriveJointPosRad, dDriveJointVelRadS, dDriveJointEffort; // Vectors for storing position, velocity and effort for the drive module
-  std::vector<double> dSteerJointPosRad, dSteerJointVelRadS, dSteerJointEffort; // Vectors for storing position, velocity and effort for the steer module
+  std::vector<double> vdDriveGearDltAngRad, vdDriveGearVelRadS, vdDriveGearEffort; // Vectors for storing position, velocity and effort for the drive module
+  std::vector<double> vdSteerGearPosRad, vdSteerGearVelRadS, vdSteerGearAngRad; // Vectors for storing position, velocity and effort for the steer module
 
   TOdomStamp =  msg->header.stamp;
   iJointNumberSize = msg->joint_names.size();
 
 // Drive joints
-  dDriveJointPosRad.assign(iNumOfJoints, 0.0);
-  dDriveJointVelRadS.assign(iNumOfJoints, 0.0);
-  dDriveJointEffort.assign(iNumOfJoints, 0.0);
+  vdDriveGearDltAngRad.assign(iNumOfJoints, 0.0);
+  vdDriveGearVelRadS.assign(iNumOfJoints, 0.0);
+  // vdDriveGearEffort.assign(iNumOfJoints, 0.0);
 
 // Steer joints
-  dSteerJointPosRad.assign(iNumOfJoints, 0.0);
-  dSteerJointVelRadS.assign(iNumOfJoints, 0.0);
-  dSteerJointEffort.assign(iNumOfJoints, 0.0);
+  vdSteerGearPosRad.assign(iNumOfJoints, 0.0);
+  vdSteerGearVelRadS.assign(iNumOfJoints, 0.0);
+  // vdSteerGearEffort.assign(iNumOfJoints, 0.0);
 
 // Assigning messages recieved to the respective drive joints
   for(int i = 0; i < iJointNumberSize; i++)
@@ -2291,8 +2302,8 @@ void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTraject
     {
       if(msg->joint_names[j] ==  "fl_caster_r_wheel_joint")
       {
-        dDriveJointPosRad[i] = msg->actual.positions[j]; 
-        dDriveJointVelRadS[i] = msg->actual.velocities[j]; 
+        vdDriveGearDltAngRad[i] = msg->actual.positions[j]; 
+        vdDriveGearVelRadS[i] = msg->actual.velocities[j]; 
         // dDriveJointEffort[i] = msg->effort;
       }
     }
@@ -2305,14 +2316,15 @@ void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTraject
     {
       if(msg->joint_names[j] ==  "fl_caster_r_wheel_joint")
       {
-        dSteerJointPosRad[i] = msg->actual.positions[j]; 
-        dSteerJointVelRadS[i] = msg->actual.velocities[j]; 
+        vdSteerGearPosRad[i] = msg->actual.positions[j]; 
+        vdSteerGearVelRadS[i] = msg->actual.velocities[j]; 
         // dDriveJointEffort[i] = msg->effort;
       }
     }
   }
+NC1.ForwardVelKinematics(vdDriveGearVelRadS,vdSteerGearVelRadS,vdDriveGearDltAngRad,vdSteerGearAngRad);
 
-
+Update_Odom();
 
 }
 
@@ -2354,6 +2366,185 @@ void NeoKinematicsOmniDrive::topicCBTwistCmd(const geometry_msgs::Twist::ConstPt
       NC1.InverseVelKinematics(0, 0, 0);
     }
 }
+
+void NeoKinematicsOmniDrive::CalcCtrlStep()
+{
+  double dVel_x_cmd, dVel_y_cmd, dVel_rad_cmd;
+  std::vector<double> vdDriveGearVelRadS, vdSteerGearVelRadS, vdSteerGearAngRad;
+  control_msgs::JointTrajectoryControllerState T_joint_state_cmd;
+
+  int j, k;
+  iWatchdog += 1;  
+
+  // if controller is initialized and underlying hardware is operating normal
+  if (bIsIntialised == true) //&& (drive_chain_diagnostic_ != diagnostic_status_lookup_.OK))
+  {
+    // as soon as (but only as soon as) platform drive chain is initialized start to send velocity commands
+    // Note: topicCallbackDiagnostic checks whether drives are operating nominal.
+    //       -> if warning or errors are issued target velocity is set to zero
+
+    // perform one control step,
+    // get the resulting cmd's for the wheel velocities and -angles from the controller class
+    // and output the achievable pltf velocity-cmds (if velocity limits where exceeded)
+    NC1.GetRefreshedCtrlState(vdDriveGearVelRadS, vdSteerGearVelRadS, vdSteerGearAngRad, dVel_x_cmd, dVel_y_cmd, dVel_rad_cmd);
+    // ToDo: adapt interface of controller class --> remove last values (not used anymore)
+
+    // if drives not operating nominal -> force commands to zero
+    // if(drive_chain_diagnostic_ != diagnostic_status_lookup_.OK)
+    // {
+    //   steer_jointang_cmds_rad.assign(m_iNumOfJoints, 0.0);
+    //   steer_jointvel_cmds_rads.assign(m_iNumOfJoints, 0.0);
+    // }
+
+    // convert variables to SI-Units
+    dVel_x_cmd = dVel_x_cmd/1000.0;
+    dVel_y_cmd = dVel_y_cmd/1000.0;
+
+    // compose jointcmds
+    // compose header
+    T_joint_state_cmd.header.stamp = ros::Time::now();
+    //joint_state_cmd.header.frame_id = frame_id; //Where to get this id from?
+    // ToDo: configure over Config-File (number of motors) and Msg
+    // assign right size to JointState data containers
+    //joint_state_cmd.set_name_size(m_iNumMotors);
+    T_joint_state_cmd.desired.positions.resize(iNumOfJoints);
+    T_joint_state_cmd.desired.velocities.resize(iNumOfJoints);            
+    //joint_state_cmd.effort.resize(m_iNumJoints);
+    T_joint_state_cmd.joint_names.push_back("fl_caster_r_wheel_joint");
+    T_joint_state_cmd.joint_names.push_back("fl_caster_rotation_joint");
+    T_joint_state_cmd.joint_names.push_back("bl_caster_r_wheel_joint");
+    T_joint_state_cmd.joint_names.push_back("bl_caster_rotation_joint");
+    T_joint_state_cmd.joint_names.push_back("br_caster_r_wheel_joint");
+    T_joint_state_cmd.joint_names.push_back("br_caster_rotation_joint");
+    T_joint_state_cmd.joint_names.push_back("fr_caster_r_wheel_joint");
+    T_joint_state_cmd.joint_names.push_back("fr_caster_rotation_joint");
+    T_joint_state_cmd.joint_names.resize(iNumOfJoints);
+
+    // compose data body
+    j = 0;
+    k = 0;
+    for(int i = 0; i<iNumOfJoints; i++)
+    {
+      if(iWatchdog < (int) std::floor(dTimeout/dSample_time) )
+      {
+        // for steering motors
+        if( i == 1 || i == 3 || i == 5 || i == 7) // ToDo: specify this via the Msg
+        {
+          T_joint_state_cmd.desired.positions[i] = vdSteerGearAngRad[j];
+          T_joint_state_cmd.desired.velocities[i] = vdSteerGearVelRadS[j];
+          //joint_state_cmd.effort[i] = 0.0;
+          j = j + 1;
+        }
+        else
+        {
+          T_joint_state_cmd.desired.positions[i] = 0.0;
+          T_joint_state_cmd.desired.velocities[i] = vdDriveGearVelRadS[k];
+          //joint_state_cmd.effort[i] = 0.0;
+          k = k + 1;
+        }
+      }
+      else
+      {
+        T_joint_state_cmd.desired.positions[i] = 0.0;
+        T_joint_state_cmd.desired.velocities[i] = 0.0;
+        //joint_state_cmd.effort[i] = 0.0;
+      }
+    }
+
+    // publish jointcmds
+    pub_Joint_controller.publish(T_joint_state_cmd);
+  }
+}
+
+void NeoKinematicsOmniDrive::Update_Odom()
+{
+  double dVel_x_cmd, dVel_y_cmd, dVel_rad_cmd, dDeltaVel_x, dDeltaVel_y, dDeltaVel_rad;
+  double dt;
+  ros::Time current_time;
+
+  if (bIsIntialised == true)
+  {
+    GetPltfVel(double dDeltaVel_x,  double dDeltaVel_y, double dDeltaVel_rad,double dVel_x_cmd,  double dVel_y_cmd, double dVel_rad_cmd);
+    NC1.GetPltfVel()
+    dVel_x_cmd = dVel_x_cmd/1000.0;
+    dVel_y_cmd = dVel_y_cmd/1000.0;
+    dDeltaVel_x = dDeltaVel_x/1000.0;
+    dDeltaVel_y = dDeltaVel_y/1000.0;
+
+  }
+  else
+  {
+    dVel_x_cmd = 0.0
+    dVel_y_cmd = 0.0
+    dDeltaVel_x = 0.0;
+    dDeltaVel_y = 0.0;
+  }
+  current_time = ros::Time::now();
+  dt = current_time.toSec() - last_time.toSec();
+  last_time = current_time;
+  vel_rob_ms = sqrt(dVel_x_cmd*dVel_x_cmd + dVel_y_cmd*dVel_y_cmd);
+
+  // calculation from ROS odom publisher tutorial http://www.ros.org/wiki/navigation/Tutorials/RobotSetup/Odom, using now midpoint integration
+  x_rob_m_ = x_rob_m_ + ((vel_x_rob_ms+vel_x_rob_last_)/2.0 * cos(theta_rob_rad_) - (vel_y_rob_ms+vel_y_rob_last_)/2.0 * sin(theta_rob_rad_)) * dt;
+  y_rob_m_ = y_rob_m_ + ((vel_x_rob_ms+vel_x_rob_last_)/2.0 * sin(theta_rob_rad_) + (vel_y_rob_ms+vel_y_rob_last_)/2.0 * cos(theta_rob_rad_)) * dt;
+  theta_rob_rad_ = theta_rob_rad_ + rot_rob_rads * dt;
+
+  vel_x_rob_last_ = vel_x_rob_ms;
+  vel_y_rob_last_ = vel_y_rob_ms;
+  vel_theta_rob_last_ = rot_rob_rads;
+
+
+  // format data for compatibility with tf-package and standard odometry msg
+  // generate quaternion for rotation
+  geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(theta_rob_rad_);
+
+  if (broadcast_tf_ == true)
+  {
+    // compose and publish transform for tf package
+    geometry_msgs::TransformStamped odom_tf;
+    // compose header
+    odom_tf.header.stamp = joint_state_odom_stamp_;
+    odom_tf.header.frame_id = "odom";
+    odom_tf.child_frame_id = "base_link";
+    // compose data container
+    odom_tf.transform.translation.x = x_rob_m_;
+    odom_tf.transform.translation.y = y_rob_m_;
+    odom_tf.transform.translation.z = 0.0;
+    odom_tf.transform.rotation = odom_quat;
+
+    // publish the transform (for debugging, conflicts with robot-pose-ekf)
+    tf_broadcast_odometry_.sendTransform(odom_tf);
+  }
+
+  // compose and publish odometry message as topic
+  nav_msgs::Odometry odom_top;
+  // compose header
+  odom_top.header.stamp = joint_state_odom_stamp_;
+  odom_top.header.frame_id = "odom";
+  odom_top.child_frame_id = "base_link";
+  // compose pose of robot
+  odom_top.pose.pose.position.x = x_rob_m_;
+  odom_top.pose.pose.position.y = y_rob_m_;
+  odom_top.pose.pose.position.z = 0.0;
+  odom_top.pose.pose.orientation = odom_quat;
+  for(int i = 0; i < 6; i++)
+    odom_top.pose.covariance[i*6+i] = 0.1;
+
+  // compose twist of robot
+  odom_top.twist.twist.linear.x = vel_x_rob_ms;
+  odom_top.twist.twist.linear.y = vel_y_rob_ms;
+  odom_top.twist.twist.linear.z = 0.0;
+  odom_top.twist.twist.angular.x = 0.0;
+  odom_top.twist.twist.angular.y = 0.0;
+  odom_top.twist.twist.angular.z = rot_rob_rads;
+  for(int i = 0; i < 6; i++)
+    odom_top.twist.covariance[6*i+i] = 0.1;
+
+  // publish odometry msg
+  topic_pub_odometry_.publish(odom_top);
+
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "NeoKinOmnidrive");                    //initialize ros node  
