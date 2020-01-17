@@ -2300,10 +2300,10 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
   std::vector<double> vdAngGearRad, vdVelGearRad, vdEffortGearNM;
 
   // set default values
-  vdAngGearRad.resize(iNumOfJoints, 0);
-  vdVelGearRad.resize(iNumOfJoints, 0);
-  vdEffortGearNM.resize(iNumOfJoints, 0);
-  ROS_INFO_ONCE("Here");
+  vdAngGearRad.resize(8, 0);
+  vdVelGearRad.resize(8, 0);
+  vdEffortGearNM.resize(8, 0);
+  // ROS_INFO_ONCE("Here");
 
   // create temporary (local) JointState/Diagnostics Data-Container
   sensor_msgs::JointState jointstate;
@@ -2315,9 +2315,9 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
 
   // assign right size to JointState
   //jointstate.name.resize(iNumOfJoints);
-  jointstate.position.assign(iNumOfJoints, 0.0);
-  jointstate.velocity.assign(iNumOfJoints, 0.0);
-  jointstate.effort.assign(iNumOfJoints, 0.0);
+  jointstate.position.assign(8, 0.0);
+  jointstate.velocity.assign(8, 0.0);
+  jointstate.effort.assign(8, 0.0);
 
   if(bIsIntialised == false)
   {
@@ -2328,7 +2328,7 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
     k = 0;
 
     // set data to jointstate     
-    for(int i = 0; i<iNumOfJoints; i++)
+    for(int i = 0; i<8; i++)
     {
       jointstate.position[i] = 0.0;
       jointstate.velocity[i] = 0.0;
@@ -2342,14 +2342,14 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
     jointstate.name.push_back("br_caster_rotation_joint");
     jointstate.name.push_back("fr_caster_r_wheel_joint");
     jointstate.name.push_back("fr_caster_rotation_joint");
-    jointstate.name.resize(iNumOfJoints);
+    jointstate.name.resize(8);
   
   }
   else
   {
     j = 0;
     k = 0;
-    for(int i = 0; i<iNumOfJoints; i++)
+    for(int i = 0; i<8; i++)
     {
       DM1.getGearPosAndVel(i,  &vdAngGearRad[i], &vdVelGearRad[i]);
       DM2.getGearPosAndVel(i,  &vdAngGearRad[i], &vdVelGearRad[i]);
@@ -2368,7 +2368,7 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
     }
 
     // set data to jointstate
-    for(int i = 0; i<iNumOfJoints; i++)
+    for(int i = 0; i<8; i++)
     {
       jointstate.position[i] = vdAngGearRad[i];
       jointstate.velocity[i] = vdVelGearRad[i];
@@ -2383,7 +2383,7 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
     jointstate.name.push_back("br_caster_rotation_joint");
     jointstate.name.push_back("fr_caster_r_wheel_joint");
     jointstate.name.push_back("fr_caster_rotation_joint");
-    jointstate.name.resize(iNumOfJoints);
+    jointstate.name.resize(8);
     
   }
 
@@ -2400,8 +2400,186 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
 
 void NeoKinematicsOmniDrive::timerCallbackCtrlStep(const ros::TimerEvent& e) 
 {
-CalcCtrlStep();
+  CalcCtrlStep();
 }
+
+void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg)
+{
+  ROS_INFO_ONCE("Topic Callback joint_command");
+  if(bIsIntialised)
+  {
+      ROS_INFO_ONCE("Topic Callback joint_command");
+
+    sensor_msgs::JointState JointStateCmdM1;
+    sensor_msgs::JointState JointStateCmdM2;
+    sensor_msgs::JointState JointStateCmdM3;
+    sensor_msgs::JointState JointStateCmdM4;
+
+    JointStateCmdM1.position.resize(2);
+    JointStateCmdM1.velocity.resize(2);
+    JointStateCmdM1.effort.resize(2);
+    JointStateCmdM2.position.resize(2);
+    JointStateCmdM2.velocity.resize(2);
+    JointStateCmdM2.effort.resize(2);
+    JointStateCmdM3.position.resize(2);
+    JointStateCmdM3.velocity.resize(2);
+    JointStateCmdM3.effort.resize(2);
+    JointStateCmdM4.position.resize(2);
+    JointStateCmdM4.velocity.resize(2);
+    JointStateCmdM4.effort.resize(2);
+
+
+
+
+
+
+    for(unsigned int i = 0; i < msg->joint_names.size(); i++)
+        {
+          if(msg->joint_names[i] ==  "fl_caster_r_wheel_joint")
+          {
+              JointStateCmdM1.position[0] = msg->desired.positions[i];
+              JointStateCmdM1.velocity[0] = msg->desired.velocities[i];
+              //JointStateCmdM1.effort[0] = msg->effort[i];
+          }
+          else if(msg->joint_names[i] ==  "fl_caster_rotation_joint")
+          {
+              JointStateCmdM1.position[1] = msg->desired.positions[i];
+              JointStateCmdM1.velocity[1] = msg->desired.velocities[i];
+              //JointStateCmdM1.effort[1] = msg->effort[i];
+          }
+                    if(msg->joint_names[i] ==  "bl_caster_r_wheel_joint")
+          {
+              JointStateCmdM2.position[0] = msg->desired.positions[i];
+              JointStateCmdM2.velocity[0] = msg->desired.velocities[i];
+              //JointStateCmdM1.effort[0] = msg->effort[i];
+          }
+          else if(msg->joint_names[i] ==  "bl_caster_rotation_joint")
+          {
+              JointStateCmdM2.position[1] = msg->desired.positions[i];
+              JointStateCmdM2.velocity[1] = msg->desired.velocities[i];
+              //JointStateCmdM1.effort[1] = msg->effort[i];
+          }
+                    if(msg->joint_names[i] ==  "br_caster_r_wheel_joint")
+          {
+              JointStateCmdM3.position[0] = msg->desired.positions[i];
+              JointStateCmdM3.velocity[0] = msg->desired.velocities[i];
+              //JointStateCmdM1.effort[0] = msg->effort[i];
+          }
+          else if(msg->joint_names[i] ==  "br_caster_rotation_joint")
+          {
+              JointStateCmdM3.position[1] = msg->desired.positions[i];
+              JointStateCmdM3.velocity[1] = msg->desired.velocities[i];
+              //JointStateCmdM1.effort[1] = msg->effort[i];
+          }
+                    if(msg->joint_names[i] ==  "fr_caster_r_wheel_joint")
+          {
+              JointStateCmdM4.position[0] = msg->desired.positions[i];
+              JointStateCmdM4.velocity[0] = msg->desired.velocities[i];
+              //JointStateCmdM1.effort[0] = msg->effort[i];
+          }
+          else if(msg->joint_names[i] ==  "fr_caster_rotation_joint")
+          {
+              JointStateCmdM4.position[1] = msg->desired.positions[i];
+              JointStateCmdM4.velocity[1] = msg->desired.velocities[i];
+              //JointStateCmdM1.effort[1] = msg->effort[i];
+          }
+
+
+        }
+// Checking for the motor safety
+    for(int i = 0; i < 2; i++) 
+    {
+        if( i == 1) // ToDo: specify this via the config-files
+          {
+            if (JointStateCmdM1.velocity[i] > dMaxSteerRadS)
+            {
+              JointStateCmdM1.velocity[i] = dMaxSteerRadS;
+            }
+            if (JointStateCmdM1.velocity[i] < -dMaxSteerRadS)
+            {
+              JointStateCmdM1.velocity[i] = -dMaxSteerRadS;
+            }
+            if (JointStateCmdM2.velocity[i] > dMaxSteerRadS)
+            {
+              JointStateCmdM2.velocity[i] = dMaxSteerRadS;
+            }
+            if (JointStateCmdM2.velocity[i] < -dMaxSteerRadS)
+            {
+              JointStateCmdM2.velocity[i] = -dMaxSteerRadS;
+            }
+            if (JointStateCmdM3.velocity[i] > dMaxSteerRadS)
+            {
+              JointStateCmdM3.velocity[i] = dMaxSteerRadS;
+            }
+            if (JointStateCmdM3.velocity[i] < -dMaxSteerRadS)
+            {
+              JointStateCmdM3.velocity[i] = -dMaxSteerRadS;
+            }
+            if (JointStateCmdM4.velocity[i] > dMaxSteerRadS)
+            {
+              JointStateCmdM4.velocity[i] = dMaxSteerRadS;
+            }
+            if (JointStateCmdM4.velocity[i] < -dMaxSteerRadS)
+            {
+              JointStateCmdM4.velocity[i] = -dMaxSteerRadS;
+            }
+          }
+          // for driving motors
+          else
+          {
+            if (JointStateCmdM1.velocity[i] > dMaxDriveRadS)
+            {
+
+              JointStateCmdM1.velocity[i] = dMaxDriveRadS;
+            }
+            if (JointStateCmdM1.velocity[i] < -dMaxDriveRadS)
+            {
+              JointStateCmdM1.velocity[i] = -dMaxDriveRadS;
+            }
+            if (JointStateCmdM2.velocity[i] > dMaxDriveRadS)
+            {
+
+              JointStateCmdM2.velocity[i] = dMaxDriveRadS;
+            }
+            if (JointStateCmdM2.velocity[i] < -dMaxDriveRadS)
+            {
+              JointStateCmdM2.velocity[i] = -dMaxDriveRadS;
+            }
+            if (JointStateCmdM3.velocity[i] > dMaxDriveRadS)
+            {
+
+              JointStateCmdM3.velocity[i] = dMaxDriveRadS;
+            }
+            if (JointStateCmdM3.velocity[i] < -dMaxDriveRadS)
+            {
+              JointStateCmdM3.velocity[i] = -dMaxDriveRadS;
+            }
+            if (JointStateCmdM4.velocity[i] > dMaxDriveRadS)
+            {
+
+              JointStateCmdM4.velocity[i] = dMaxDriveRadS;
+            }
+            if (JointStateCmdM4.velocity[i] < -dMaxDriveRadS)
+            {
+              JointStateCmdM4.velocity[i] = -dMaxDriveRadS;
+            }
+          }
+                        std::cout<<JointStateCmdM1.velocity[i];
+
+        DM1.setVelInRadS(i,JointStateCmdM1.velocity[i]);
+        DM2.setVelInRadS(i,JointStateCmdM2.velocity[i]);
+        DM3.setVelInRadS(i,JointStateCmdM3.velocity[i]);
+        DM4.setVelInRadS(i,JointStateCmdM4.velocity[i]);
+
+    }
+
+
+    
+  }
+}
+
+
+
 
 void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg)
 {
@@ -2511,7 +2689,7 @@ void NeoKinematicsOmniDrive::topicCBTwistCmd(const geometry_msgs::Twist::ConstPt
     }
     if(bIsIntialised == true)
     {
-      ROS_INFO_ONCE("received new velocity command [cmdVelX=%3.5f,cmdVelY=%3.5f,cmdVelTh=%3.5f]", 
+      ROS_INFO("received new velocity command [cmdVelX=%3.5f,cmdVelY=%3.5f,cmdVelTh=%3.5f]", 
             msg->linear.x, msg->linear.y, msg->angular.z);
       NC1.SetRequiredVelocity(dVel_x_cmd,  dVel_y_cmd, dVel_rad_cmd);
     }
@@ -2536,22 +2714,15 @@ void NeoKinematicsOmniDrive::CalcCtrlStep()
     // as soon as (but only as soon as) platform drive chain is initialized start to send velocity commands
     // Note: topicCallbackDiagnostic checks whether drives are operating nominal.
     //       -> if warning or errors are issued target velocity is set to zero
-
     // perform one control step,
     // get the resulting cmd's for the wheel velocities and -angles from the controller class
     // and output the achievable pltf velocity-cmds (if velocity limits where exceeded)
-    NC1.GetRefreshedCtrlState(vdDriveGearVelRadS, vdSteerGearVelRadS, vdSteerGearAngRad, dVel_x_cmd, dVel_y_cmd, dVel_rad_cmd);
-    // ToDo: adapt interface of controller class --> remove last values (not used anymore)
-
-    // if drives not operating nominal -> force commands to zero
-    // if(drive_chain_diagnostic_ != diagnostic_status_lookup_.OK)
-    // {
-    //   steer_jointang_cmds_rad.assign(m_iNumOfJoints, 0.0);
-    //   steer_jointvel_cmds_rads.assign(m_iNumOfJoints, 0.0);
-    // }
+    NC1.GetRefreshedCtrlState(&vdDriveGearVelRadS, &vdSteerGearVelRadS, &vdSteerGearAngRad, &dVel_x_cmd, &dVel_y_cmd, &dVel_rad_cmd);
 
     // convert variables to SI-Units
     dVel_x_cmd = dVel_x_cmd/1000.0;
+    // std::cout<<"Node:"<<dVel_x_cmd<<std::endl;
+
     dVel_y_cmd = dVel_y_cmd/1000.0;
 
     // compose jointcmds
@@ -2561,8 +2732,8 @@ void NeoKinematicsOmniDrive::CalcCtrlStep()
     // ToDo: configure over Config-File (number of motors) and Msg
     // assign right size to JointState data containers
     //joint_state_cmd.set_name_size(iNumOfJoints);
-    T_joint_state_cmd.desired.positions.resize(iNumOfJoints);
-    T_joint_state_cmd.desired.velocities.resize(iNumOfJoints);            
+    T_joint_state_cmd.desired.positions.resize(8);
+    T_joint_state_cmd.desired.velocities.resize(8);            
     //joint_state_cmd.effort.resize(m_iNumJoints);
     T_joint_state_cmd.joint_names.push_back("fl_caster_r_wheel_joint");
     T_joint_state_cmd.joint_names.push_back("fl_caster_rotation_joint");
@@ -2572,16 +2743,17 @@ void NeoKinematicsOmniDrive::CalcCtrlStep()
     T_joint_state_cmd.joint_names.push_back("br_caster_rotation_joint");
     T_joint_state_cmd.joint_names.push_back("fr_caster_r_wheel_joint");
     T_joint_state_cmd.joint_names.push_back("fr_caster_rotation_joint");
-    T_joint_state_cmd.joint_names.resize(iNumOfJoints);
+    T_joint_state_cmd.joint_names.resize(8);
 
     // compose data body
     j = 0;
     k = 0;
-    for(int i = 0; i<iNumOfJoints; i++)
+    for(int i = 0; i<8; i++)
     {
       if(iWatchdog < (int) std::floor(dTimeout/dSample_time) )
       {
         // for steering motors
+        // std::cout<<vdDriveGearVelRadS[i];
         if( i == 1 || i == 3 || i == 5 || i == 7) // ToDo: specify this via the Msg
         {
           T_joint_state_cmd.desired.positions[i] = vdSteerGearAngRad[j];
@@ -3065,7 +3237,7 @@ int main(int argc, char** argv)
         
         DM1.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos1 = vdPosGearRad[1];
-        homing = er(1,pos1, 0.08);
+        homing = er(1,pos1, 0.042);
         DM1.recMessages(); 
         usleep(20000);
 
@@ -3096,11 +3268,15 @@ int main(int argc, char** argv)
       else if(m_iDriveState == ST_RUNNING)
       {
         bIsIntialised = true;
-        if(bIsIntialised == true && iFST_Running>=0)
+        if(bIsIntialised == true && iFST_Running==0)
         {
-          NK1.NC1.InitialiseWheelPosition(); 
           ROS_INFO_ONCE("Initialising the kinematics"); 
-          NK1.JointStatesMeasure();
+          NK1.NC1.InitialiseWheelPosition(); 
+          iFST_Running++;
+        }
+        if(bIsIntialised == true && iFST_Running>=1)
+        {
+         NK1.JointStatesMeasure();
           iFST_Running++;
         }
       }

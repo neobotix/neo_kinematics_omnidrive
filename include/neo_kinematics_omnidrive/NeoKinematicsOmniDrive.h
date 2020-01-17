@@ -171,6 +171,7 @@ class NeoKinematicsOmniDrive
 		ros::Subscriber sub_Commanded_Twist;
 		ros::Subscriber sub_Joint_States;
 		ros::Subscriber sub_Joint_command;
+		ros::Subscriber sub_JointStateCmd;
 		ros::Time TOdomStamp;	
 
 	// Object initialisation for the class NeoKinematics 
@@ -179,7 +180,7 @@ class NeoKinematicsOmniDrive
 		ros::Time last_time;
 
 	// Variables for odom update
-		double dPos_X, dPos_Y, dPos_Rad; 
+		double dPos_X =0, dPos_Y=0, dPos_Rad=0; 
 
 		double dVel_X_last, dVel_Y_last, dVel_Rad_last;
 
@@ -198,25 +199,30 @@ class NeoKinematicsOmniDrive
 
 
 		// Publishers
+		timer_ctrl_step_ = n.createTimer(ros::Duration(0.01), &NeoKinematicsOmniDrive::timerCallbackCtrlStep, this);
+
 
 		pubJointStates = n.advertise<sensor_msgs::JointState>("/joint_states", 1);
 
-		pubJointControllerStates =  n.advertise<control_msgs::JointTrajectoryControllerState>("/state1", 1);
-		// Joint trajectory controller allows us to control a joint by it's position, velocity or effort. 
-		pub_Joint_controller =  n.advertise<control_msgs::JointTrajectoryControllerState> ("joint_command", 1);
+		pubJointControllerStates =  n.advertise<control_msgs::JointTrajectoryControllerState>("/controller_state", 1);
 
-	// 	// Navigation - Odometry 
-		pub_Odometry = n.advertise<nav_msgs::Odometry>("odometry", 1);
+
+	// // 	// Navigation - Odometry 
+		pub_Odometry = n.advertise<nav_msgs::Odometry>("/odometry", 1);
 
 	// // Subscribers
 
 		// Subscribers for the user's command velocity, that the robot need to process.
-		// sub_Commanded_Twist = n.subscribe("cmd_vel", 1, &NeoKinematicsOmniDrive::topicCBTwistCmd, this); 
+		sub_Commanded_Twist = n.subscribe("/cmd_vel", 1, &NeoKinematicsOmniDrive::topicCBTwistCmd, this); 
 
-		// Recieves the joint states. Used for inverse kinematics calculation.
-		sub_Joint_States = n.subscribe("/state1", 1, &NeoKinematicsOmniDrive::topicCBJointStates, this); 
+		// // Recieves the joint states. Used for inverse kinematics calculation.
+		sub_Joint_States = n.subscribe("/controller_state", 1, &NeoKinematicsOmniDrive::topicCBJointStates, this); 
 
-		// timer_ctrl_step_ = n.createTimer(ros::Duration(dSample_time), &NeoKinematicsOmniDrive::timerCallbackCtrlStep, this);
+
+		// 		// Joint trajectory controller allows us to control a joint by it's position, velocity or effort. 
+		pub_Joint_controller =  n.advertise<control_msgs::JointTrajectoryControllerState> ("/joint_command", 1);
+
+		sub_JointStateCmd = n.subscribe("/joint_command", 1, &NeoKinematicsOmniDrive::topicCBJointCommand, this);
 
 
 		}
@@ -230,6 +236,8 @@ class NeoKinematicsOmniDrive
 		void topicCBTwistCmd(const geometry_msgs::Twist::ConstPtr& msg);
 
 		void timerCallbackCtrlStep(const ros::TimerEvent& e); 
+
+		void topicCBJointCommand(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg);
 
 		// Setting up other functionalities
 
