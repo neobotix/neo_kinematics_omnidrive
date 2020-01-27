@@ -40,6 +40,11 @@ public:
 	std::vector<double> m_vdWheelAngRad;
 	std::vector<double> m_vdWheelNeutralPos;
 
+		std::vector<double> m_vdExWheelPosXMM;
+	std::vector<double> m_vdExWheelPosYMM;
+	std::vector<double> m_vdExWheelDistMM;
+	std::vector<double> m_vdExWheelAngRad;
+
 	// Variables to denote(calculated) platform movement
 	double m_dVel_x;
 	double m_dVel_y;
@@ -77,22 +82,25 @@ public:
 					double dCmdRateSec, double dSpring, double dDamp, double dVirtualMass, double dDPhiMax, double dDDPhiMax, double dMaxDriveRadS, double dMaxSteerRadS,
 					std::vector<double> vdSteerPosWheelXMM, std::vector<double> vdSteerPosWheelYMM,
 					std::vector<double> vdWheelNeutralPos);
-	void InitialiseWheelPosition();
+	// void InitialiseWheelPosition();
 	void SetRequiredVelocity(double dVel_x_cmd,  double dVel_y_cmd, double dVel_rad_cmd);
 	void SetRequiredWheelPoses(std::vector<double> vdDriveGearVelRadS,std::vector<double> vdSteerGearVelRadS,std::vector<double> vdDriveGearDltAngRad,std::vector<double> vdSteerGearAngRad);
-	void GetPltfVel(double dDeltaVel_x,  double dDeltaVel_y, double dDeltaVel_rad,double dVel_x_cmd,  double dVel_y_cmd, double dVel_rad_cmd);
-	void GetRefreshedCtrlState(	std::vector<double> *vdDriveGearVelRadS, std::vector<double> *vdSteerGearVelRadS, std::vector<double> *vdSteerGearAngRad, double *dVel_x_cmd, double *dVel_y_cmd, double *dVel_rad_cmd);
+	void GetPltfVel(double *dDeltaVel_x,  double *dDeltaVel_y, double *dDeltaVel_rad,double *dVel_x,  double *dVel_y, double *dVel_rad);
+	void GetRefreshedCtrlState(	std::vector<double> *vdDriveGearVelRadS, std::vector<double> *vdSteerGearVelRadS, std::vector<double> *vdSteerGearAngRad, double *dVel_x, double *dVel_y, double *dVel_rad);
 
 
 NeoKinematics();
 ~NeoKinematics();
 	// void operator=();
 
+void operator=(NeoKinematics const & GeomCtrl);
 
+private:
 	void InverseKinematicsCalc();
 	void ForwardKinematicsCalc();
 	void CtrlStepCalc();
 	void WheelPositionCalc();
+
 
 
 

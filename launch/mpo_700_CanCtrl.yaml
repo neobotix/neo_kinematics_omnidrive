@@ -99,7 +99,7 @@ Steer1:
    VelMaxEncIncrS: 1000000
    AccIncrS: 1000000 #80000
    DecIncrS: 1000000 #80000
-   EncOffsetIncr: -5000
+   EncOffsetIncr: 5684
    IsSteering: true
    CurrentToTorque: 0.10065 # Factor to convert motor active current [A] into Torque [Nm]
    CurrMax: 9.62 # Defines maximum allowed current command (in MotionMode: CurrentCtrl)

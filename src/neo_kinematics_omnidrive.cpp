@@ -2237,17 +2237,17 @@ void displayErrors(int iErrorNum)
     DM1.setGearTor(msg->data);
   }
 
-void EmgCB(const neo_msgs::EmergencyStopState msg)
-{
-  if((bool)msg.emergency_button_stop || (bool)msg.scanner_stop == 1)
-  {
-    bEMstate = 1;
-  }
-  else
-  {
-    bEMstate = 0;
-  }
-}
+// void EmgCB(const neo_msgs::EmergencyStopState msg)
+// {
+//   if((bool)msg.emergency_button_stop || (bool)msg.scanner_stop == 1)
+//   {
+//     bEMstate = 1;
+//   }
+//   else
+//   {
+//     bEMstate = 0;
+//   }
+// }
 
 
 
@@ -2297,12 +2297,35 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
   // init local variables
   int j, k;
   bool bIsError;
-  std::vector<double> vdAngGearRad, vdVelGearRad, vdEffortGearNM;
+  std::vector<double> vdAngGearRadW1, vdVelGearRadW1, vdEffortGearNMW1;
+
+  std::vector<double> vdAngGearRadW2, vdVelGearRadW2, vdEffortGearNMW2;
+
+  std::vector<double> vdAngGearRadW3, vdVelGearRadW3, vdEffortGearNMW3;
+
+  std::vector<double> vdAngGearRadW4, vdVelGearRadW4, vdEffortGearNMW4;
+
 
   // set default values
-  vdAngGearRad.resize(8, 0);
-  vdVelGearRad.resize(8, 0);
-  vdEffortGearNM.resize(8, 0);
+  // vdAngGearRadW.resize(8, 0);
+  // vdVelGearRadW.resize(8, 0);
+  // vdEffortGearNMW.resize(8, 0);
+
+  vdAngGearRadW1.resize(2, 0);
+  vdVelGearRadW1.resize(2, 0);
+  vdEffortGearNMW1.resize(2, 0);
+
+  vdAngGearRadW2.resize(2, 0);
+  vdVelGearRadW2.resize(2, 0);
+  vdEffortGearNMW2.resize(2, 0);
+
+  vdAngGearRadW3.resize(2, 0);
+  vdVelGearRadW3.resize(2, 0);
+  vdEffortGearNMW3.resize(2, 0);
+
+  vdAngGearRadW4.resize(2, 0);
+  vdVelGearRadW4.resize(2, 0);
+  vdEffortGearNMW4.resize(2, 0);
   // ROS_INFO_ONCE("Here");
 
   // create temporary (local) JointState/Diagnostics Data-Container
@@ -2349,30 +2372,57 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
   {
     j = 0;
     k = 0;
-    for(int i = 0; i<8; i++)
-    {
-      DM1.getGearPosAndVel(i,  &vdAngGearRad[i], &vdVelGearRad[i]);
-      DM2.getGearPosAndVel(i,  &vdAngGearRad[i], &vdVelGearRad[i]);
-      DM3.getGearPosAndVel(i,  &vdAngGearRad[i], &vdVelGearRad[i]);
-      DM4.getGearPosAndVel(i,  &vdAngGearRad[i], &vdVelGearRad[i]);
-
-
-        // if a steering motor was read -> correct for offset
-        if( i == 1 || i == 3 || i == 5 || i == 7) // ToDo: specify this via the config-files
+    for(int i = 0; i<2; i++)
       {
-        // correct for initial offset of steering angle (arbitrary homing position)
-        vdAngGearRad[i] += vdWheelNeutralPos[j];
-        NeoMath::PiNormalization(vdAngGearRad[i]);
-        j = j+1;
+        DM1.getGearPosAndVel(i,  &vdAngGearRadW1[i], &vdVelGearRadW1[i]);
+        DM2.getGearPosAndVel(i,  &vdAngGearRadW2[i], &vdVelGearRadW2[i]);
+        DM3.getGearPosAndVel(i,  &vdAngGearRadW3[i], &vdVelGearRadW3[i]);
+        DM4.getGearPosAndVel(i,  &vdAngGearRadW4[i], &vdVelGearRadW4[i]);
       }
-    }
+
+
+      vdAngGearRadW1[1] += 3.14159265358979323846;
+      NeoMath::PiNormalization(vdAngGearRadW1[1]);
+      vdAngGearRadW2[1] += 3.14159265358979323846;
+      NeoMath::PiNormalization(vdAngGearRadW2[1]);
+      vdAngGearRadW3[1] += vdWheelNeutralPos[2];
+      NeoMath::PiNormalization(vdAngGearRadW3[1]);
+      vdAngGearRadW4[1] += vdWheelNeutralPos[3];
+      NeoMath::PiNormalization(vdAngGearRadW4[1]);
+
+        //   // if a steering motor was read -> correct for offset
+        //   if( i == 1 || i == 3 || i == 5 || i == 7) // ToDo: specify this via the config-files
+        // {
+        //   // correct for initial offset of steering angle (arbitrary homing position)
+        //   vdAngGearRad[i] += vdWheelNeutralPos[j];
+        //   NeoMath::PiNormalization(vdAngGearRad[i]);
+        //   j = j+1;
+        // }
+      
+
 
     // set data to jointstate
-    for(int i = 0; i<8; i++)
+    // for(int i = 0; i<8; i++)
+    // {
+    //   jointstate.position[i] = vdAngGearRad[i];
+    //   jointstate.velocity[i] = vdVelGearRad[i];
+    //   jointstate.effort[i] = 0;
+    // }
+
+    for(int i=0;i<=1;i++)
     {
-      jointstate.position[i] = vdAngGearRad[i];
-      jointstate.velocity[i] = vdVelGearRad[i];
+      jointstate.position[i] = vdAngGearRadW1[i];
+      jointstate.velocity[i] = vdVelGearRadW1[i];
       jointstate.effort[i] = 0;
+      jointstate.position[i+2] = vdAngGearRadW2[i];
+      jointstate.velocity[i+2] = vdVelGearRadW2[i];
+      jointstate.effort[i+2] = 0;
+      jointstate.position[i+4] = vdAngGearRadW3[i];
+      jointstate.velocity[i+4] = vdVelGearRadW3[i];
+      jointstate.effort[i+4] = 0;
+      jointstate.position[i+6] = vdAngGearRadW4[i];
+      jointstate.velocity[i+6] = vdVelGearRadW4[i];
+      jointstate.effort[i+6] = 0;
     }
     
     jointstate.name.push_back("fl_caster_r_wheel_joint");
@@ -2392,7 +2442,7 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
   controller_state.actual.velocities = jointstate.velocity;
 
   // publish jointstate message
-  pubJointStates.publish(jointstate);
+  // pubJointStates.publish(jointstate);
   pubJointControllerStates.publish(controller_state);
   
   ROS_DEBUG("published new drive-chain configuration (JointState message)");
@@ -2400,7 +2450,15 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
 
 void NeoKinematicsOmniDrive::timerCallbackCtrlStep(const ros::TimerEvent& e) 
 {
+   aStart = std::chrono::steady_clock::now();
   CalcCtrlStep();
+    auto aEnd = std::chrono::steady_clock::now();
+  iTimeElapse = std::chrono::duration_cast<std::chrono::microseconds>( aEnd - aStart ).count();
+  if(iTimeElapse>2500)
+  {
+    ROS_WARN("Joint command rate exceeded");
+  }
+
 }
 
 void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg)
@@ -2408,8 +2466,6 @@ void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajec
   ROS_INFO_ONCE("Topic Callback joint_command");
   if(bIsIntialised)
   {
-      ROS_INFO_ONCE("Topic Callback joint_command");
-
     sensor_msgs::JointState JointStateCmdM1;
     sensor_msgs::JointState JointStateCmdM2;
     sensor_msgs::JointState JointStateCmdM3;
@@ -2429,10 +2485,6 @@ void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajec
     JointStateCmdM4.effort.resize(2);
 
 
-
-
-
-
     for(unsigned int i = 0; i < msg->joint_names.size(); i++)
         {
           if(msg->joint_names[i] ==  "fl_caster_r_wheel_joint")
@@ -2440,6 +2492,8 @@ void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajec
               JointStateCmdM1.position[0] = msg->desired.positions[i];
               JointStateCmdM1.velocity[0] = msg->desired.velocities[i];
               //JointStateCmdM1.effort[0] = msg->effort[i];
+              // if(JointStateCmdM1.velocity[0])
+              // std::cout<<JointStateCmdM1.velocity[0];
           }
           else if(msg->joint_names[i] ==  "fl_caster_rotation_joint")
           {
@@ -2484,7 +2538,8 @@ void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajec
               //JointStateCmdM1.effort[1] = msg->effort[i];
           }
 
-
+          // if(JointStateCmdM4.velocity[1]!=0)          
+          // {std::cout<<"JC-S:"<<JointStateCmdM2.velocity[1]<<std::endl;}
         }
 // Checking for the motor safety
     for(int i = 0; i < 2; i++) 
@@ -2564,17 +2619,15 @@ void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajec
               JointStateCmdM4.velocity[i] = -dMaxDriveRadS;
             }
           }
-                        std::cout<<JointStateCmdM1.velocity[i];
+          // if(JointStateCmdM2.velocity[1]!=0)          
+          // {std::cout<<"JC:"<<JointStateCmdM2.velocity[1]<<std::endl;}
 
         DM1.setVelInRadS(i,JointStateCmdM1.velocity[i]);
         DM2.setVelInRadS(i,JointStateCmdM2.velocity[i]);
         DM3.setVelInRadS(i,JointStateCmdM3.velocity[i]);
         DM4.setVelInRadS(i,JointStateCmdM4.velocity[i]);
 
-    }
-
-
-    
+    }   
   }
 }
 
@@ -2584,8 +2637,8 @@ void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajec
 void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTrajectoryControllerState::ConstPtr& msg)
 {
   int iJointNumberSize;
-  std::vector<double> vdDriveGearDltAngRad, vdDriveGearVelRadS, vdDriveGearEffort; // Vectors for storing position, velocity and effort for the drive module
-  std::vector<double> vdSteerGearPosRad, vdSteerGearVelRadS, vdSteerGearAngRad; // Vectors for storing position, velocity and effort for the steer module
+  std::vector<double> vdDriveGearDltAngRad, vdDriveGearVelRadS; // Vectors for storing position, velocity and effort for the drive module
+  std::vector<double> vdSteerGearPosRad, vdSteerGearVelRadS; // Vectors for storing position, velocity and effort for the steer module
 
   TOdomStamp =  msg->header.stamp;
   iJointNumberSize = msg->joint_names.size();
@@ -2602,7 +2655,7 @@ void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTraject
 // std::cout<<"here";
 
 // Assigning messages recieved to the respective drive joints and steer joints
-  for(int i = 0; i < iJointNumberSize; i++)
+  for(int i = 0; i < 8; i++)
   {
       if(msg->joint_names[i] ==  "fl_caster_r_wheel_joint")
       {
@@ -2654,7 +2707,7 @@ void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTraject
       }
   }
 
-NC1.SetRequiredWheelPoses(vdDriveGearVelRadS,vdSteerGearVelRadS,vdDriveGearDltAngRad,vdSteerGearAngRad);
+NC1.SetRequiredWheelPoses(vdDriveGearVelRadS,vdSteerGearVelRadS,vdDriveGearDltAngRad,vdSteerGearPosRad);
 
 Update_Odom();
 
@@ -2704,13 +2757,17 @@ void NeoKinematicsOmniDrive::CalcCtrlStep()
   double dVel_x_cmd, dVel_y_cmd, dVel_rad_cmd;
   std::vector<double> vdDriveGearVelRadS, vdSteerGearVelRadS, vdSteerGearAngRad;
   control_msgs::JointTrajectoryControllerState T_joint_state_cmd;
-
+  vdDriveGearVelRadS.assign(4,0);
+  vdSteerGearVelRadS.assign(4,0);
+  vdSteerGearAngRad.assign(4,0);
   int j, k;
-  iWatchdog += 1;  
+
 
   // if controller is initialized and underlying hardware is operating normal
   if (bIsIntialised == true) //&& (drive_chain_diagnostic_ != diagnostic_status_lookup_.OK))
   {
+    iWatchdog += 1;  
+    // std::cout<<iWatchdog<<std::endl;
     // as soon as (but only as soon as) platform drive chain is initialized start to send velocity commands
     // Note: topicCallbackDiagnostic checks whether drives are operating nominal.
     //       -> if warning or errors are issued target velocity is set to zero
@@ -2721,7 +2778,14 @@ void NeoKinematicsOmniDrive::CalcCtrlStep()
 
     // convert variables to SI-Units
     dVel_x_cmd = dVel_x_cmd/1000.0;
-    // std::cout<<"Node:"<<dVel_x_cmd<<std::endl;
+    // if(dVel_x_cmd!=0)
+    // {std::cout<<"Node:"<<dVel_x_cmd<<std::endl;}
+
+    // if(dVel_y_cmd!=0)
+    // {std::cout<<"Node:"<<dVel_y_cmd<<std::endl;}
+
+    // if(dVel_rad_cmd!=0)
+    // {std::cout<<"Node:"<<dVel_rad_cmd<<std::endl;}
 
     dVel_y_cmd = dVel_y_cmd/1000.0;
 
@@ -2750,16 +2814,15 @@ void NeoKinematicsOmniDrive::CalcCtrlStep()
     k = 0;
     for(int i = 0; i<8; i++)
     {
-      if(iWatchdog < (int) std::floor(dTimeout/dSample_time) )
-      {
+
         // for steering motors
-        // std::cout<<vdDriveGearVelRadS[i];
         if( i == 1 || i == 3 || i == 5 || i == 7) // ToDo: specify this via the Msg
         {
           T_joint_state_cmd.desired.positions[i] = vdSteerGearAngRad[j];
           T_joint_state_cmd.desired.velocities[i] = vdSteerGearVelRadS[j];
           //joint_state_cmd.effort[i] = 0.0;
           j = j + 1;
+          // std::cout<<
         }
         else
         {
@@ -2768,13 +2831,6 @@ void NeoKinematicsOmniDrive::CalcCtrlStep()
           //joint_state_cmd.effort[i] = 0.0;
           k = k + 1;
         }
-      }
-      else
-      {
-        T_joint_state_cmd.desired.positions[i] = 0.0;
-        T_joint_state_cmd.desired.velocities[i] = 0.0;
-        //joint_state_cmd.effort[i] = 0.0;
-      }
     }
 
     // publish jointcmds
@@ -2795,7 +2851,7 @@ void NeoKinematicsOmniDrive::Update_Odom()
 
   if (bIsIntialised == true)
   {
-    NC1.GetPltfVel(dDeltaVel_x, dDeltaVel_y, dDeltaVel_rad,dVel_x_cmd,  dVel_y_cmd, dVel_rad_cmd);
+    NC1.GetPltfVel(&dDeltaVel_x, &dDeltaVel_y, &dDeltaVel_rad, &dVel_x_cmd, &dVel_y_cmd, &dVel_rad_cmd);
     dVel_x_cmd = dVel_x_cmd/1000.0;
     dVel_y_cmd = dVel_y_cmd/1000.0;
     dDeltaVel_x = dDeltaVel_x/1000.0;
@@ -2813,6 +2869,7 @@ void NeoKinematicsOmniDrive::Update_Odom()
   dt = current_time.toSec() - last_time.toSec();
   last_time = current_time;
   dVel_x_cmd = sqrt(dVel_x_cmd*dVel_x_cmd + dVel_y_cmd*dVel_y_cmd);
+  // std::cout<<"Pose_X:"<<dPos_Y<<std::endl;
 
   // calculation from ROS odom publisher tutorial http://www.ros.org/wiki/navigation/Tutorials/RobotSetup/Odom, using now midpoint integration
   dPos_X = dPos_X + ((dVel_x_cmd+dVel_X_last)/2.0 * cos(dPos_Rad) - (dVel_y_cmd+dVel_Y_last)/2.0 * sin(dPos_Rad)) * dt;
@@ -2860,7 +2917,7 @@ void NeoKinematicsOmniDrive::Update_Odom()
   odom_top.pose.pose.position.z = 0.0;
   odom_top.pose.pose.orientation = odom_quat;
   for(int i = 0; i < 6; i++)
-    odom_top.pose.covariance[i*6+i] = 0.1;
+    {odom_top.pose.covariance[i*6+i] = 0.1;}
 
   // compose twist of robot
   odom_top.twist.twist.linear.x = dVel_x_cmd;
@@ -2870,7 +2927,7 @@ void NeoKinematicsOmniDrive::Update_Odom()
   odom_top.twist.twist.angular.y = 0.0;
   odom_top.twist.twist.angular.z = dVel_rad_cmd;
   for(int i = 0; i < 6; i++)
-  odom_top.twist.covariance[6*i+i] = 0.1;
+  {odom_top.twist.covariance[6*i+i] = 0.1;}
 
   // publish odometry msg
   pub_Odometry.publish(odom_top);
@@ -2880,11 +2937,12 @@ void NeoKinematicsOmniDrive::Update_Odom()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "NeoKinOmnidrive");                    //initialize ros node  
-  ros::NodeHandle n; 
+
+  // ros::NodeHandle n; 
   NeoKinematicsOmniDrive NK1;                                  //ros node handle
   std::vector <int> viRet,viRet1,viRet2,viRet3,viRet4;                                     //vector that stores the return value of recMessages() function
-  int iTimeElapsed,iTimeSleep;                                 //variable to store elapsed time
-  std::chrono::steady_clock::time_point aStart,aStartTime, aStartTime1;     //aStart stores the start time for homing
+  int iTimeElapsed,iTimeSleep, iTimeSleep1, iTimeSleep2;                                 //variable to store elapsed time
+  std::chrono::steady_clock::time_point aStart,aStartTime, aStartTime1, t1, t2, t3, t4;     //aStart stores the start time for homing
   int iNumOfMotors=2;                                          //total no of motors
   bool bDriveError;                                            //boolean variable that tells presence of drive error
   //creating a vectors to store positoin and velocity of steer and drive motors of DM1
@@ -2905,7 +2963,7 @@ int main(int argc, char** argv)
   vdWheelNeutralPos.assign(4,0);
 
   //loading all the required params from yaml file
-  if(!(loadingParams(n) == 0))
+  if(!(loadingParams(NK1.n) == 0))
   {
     ROS_ERROR("Error occured while loading the params");
     // return -1;
@@ -2915,7 +2973,6 @@ int main(int argc, char** argv)
 
    //declaring variable to store ther return value of init funciton
    int iErrorVal1,iErrorVal2,iErrorVal3,iErrorVal4;
-
 
 
    // starting the canopen network using network mangaement protocol
@@ -2979,7 +3036,7 @@ int main(int argc, char** argv)
    int state = 1;
    //ros serviceserver for homing
    ros::ServiceServer srvServer_Homing = NK1.n.advertiseService("start_homing", srvCallback_Homing);
-   ros::Subscriber topicPub_isEmergencyStop = NK1.n.subscribe("state", 1000, EmgCB);
+   // ros::Subscriber topicPub_isEmergencyStop = NK1.n.subscribe("state", 1000, EmgCB);
    ros::Rate loop_rate(100);
    double m_d0 = 1;
    bool homing = true;
@@ -2991,24 +3048,42 @@ int main(int argc, char** argv)
    bool status2;
    bool status3;
    bool status4;
-
-// Parameters initialisation for Kinematics calculation
-   NK1.NC1.InitParams(iNumOfJoints, iWheelDistMM,  iWheelRadiusMM, dTransMaxVelocity,  dRadMaxVelocity,  iSteerAxisDistToDriveWheelMM, 
-       dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
-      vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
+  NK1.NC1.InitParams(iNumOfJoints, iWheelDistMM,  iWheelRadiusMM, dTransMaxVelocity,  dRadMaxVelocity,  iSteerAxisDistToDriveWheelMM, 
+  dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
+  vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
+  int size = 0;
 
    while (ros::ok())
    {  
+  
+  //     t1 = std::chrono::steady_clock::now();
+     // bool b = true;
+     //  DM1.startCommunication();
+     //  DM2.startCommunication();
+     //  DM3.startCommunication();
+     //  DM4.startCommunication();
+
+
      //receiving the messages and  stores it in vector
       viRet1= DM1.recMessages(); 
-      viRet2= DM2.recMessages(); 
-      viRet3= DM3.recMessages(); 
-      viRet4= DM4.recMessages(); 
+
+      // auto t2 = std::chrono::steady_clock::now();
+      // iTimeSleep1 = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+      // viRet2= DM2.recMessages(); 
+      // viRet3= DM3.recMessages(); 
+      // viRet4= DM4.recMessages(); 
+
       viRet.insert(viRet.begin(), viRet1.begin(), viRet1.end());
       viRet.insert(viRet.end(),viRet2.begin(), viRet2.end());
       viRet.insert(viRet.end(),viRet3.begin(), viRet3.end());
       viRet.insert(viRet.end(),viRet4.begin(), viRet4.end());
+      size += viRet1.size();
+      size += viRet2.size();
+      size += viRet3.size();
+      size += viRet4.size();
 
+
+      // std::cout<<size<<std::endl;
       for (int i = 0; i < viRet.size(); i++) 
       {
         //checking if any error present in the received vector by passing vector to the driveErrors function
@@ -3028,11 +3103,19 @@ int main(int argc, char** argv)
         if((driveErrors(viRet[i])==-1))
         {
           displayErrors(viRet[i]);
+
           //in case of critical errors it exits the program
           return -1;
         }
-      
+
+
       }
+        viRet.clear();
+        viRet1.clear();
+        viRet2.clear();
+        viRet3.clear();
+        viRet4.clear();
+
       //if the dirve state is  ST_DRIVE_ERROR
       if(m_iDriveState==ST_DRIVE_ERROR)
       {
@@ -3265,20 +3348,34 @@ int main(int argc, char** argv)
         {m_iDriveState = ST_RUNNING;}
 
       }
+
       else if(m_iDriveState == ST_RUNNING)
       {
+
+
         bIsIntialised = true;
-        if(bIsIntialised == true && iFST_Running==0)
+        // if(bIsIntialised == true && iFST_Running==0)
+        // {
+        //   ROS_INFO_ONCE("Initialising the kinematics"); 
+        //   // Parameters initialisation for Kinematics calculation
+        //     NK1.NC1.InitParams(iNumOfJoints, iWheelDistMM,  iWheelRadiusMM, dTransMaxVelocity,  dRadMaxVelocity,  iSteerAxisDistToDriveWheelMM, 
+        //     dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
+        //     vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
+        //   // NK1.NC1.InitialiseWheelPosition(); 
+        //   iFST_Running++;
+        // }
+
+        if(bIsIntialised == true && iFST_Running>=0)
         {
-          ROS_INFO_ONCE("Initialising the kinematics"); 
-          NK1.NC1.InitialiseWheelPosition(); 
-          iFST_Running++;
-        }
-        if(bIsIntialised == true && iFST_Running>=1)
-        {
+          ROS_INFO_ONCE("Running"); 
          NK1.JointStatesMeasure();
           iFST_Running++;
         }
+        
+
+        // if(iTimeSleep1>100)
+        // {std::cout<<iTimeSleep1<<std::endl;}
+
       }
       else if(m_iDriveState == ST_EMERGENCY)
       {
@@ -3293,10 +3390,29 @@ int main(int argc, char** argv)
         }
       }
 
+  //     // std::cout<<iTimeSleep<<std::endl;
+
+                 
 
 
-      loop_rate.sleep();   
+
+  //    t3 = std::chrono::steady_clock::now();
+
       ros::spinOnce();
+      loop_rate.sleep();   
+
+
+  //   auto t4 = std::chrono::steady_clock::now();
+  //             // std::cout<<iTimeSleep1<<std::endl;
+
+  //   iTimeSleep2 = std::chrono::duration_cast<std::chrono::microseconds>( t4 - t3 ).count();
+  //   // std::cout<<iTimeSleep2<<std::endl;
+
+  //       if(iTimeSleep1+ iTimeSleep2>10000)
+  //       {
+
+  //         ROS_WARN("Loop exceeded limit");
+  //       }
 
     }
 

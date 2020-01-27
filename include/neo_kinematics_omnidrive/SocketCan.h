@@ -54,12 +54,15 @@ public:
   *@param sCMsg: It is the object for CanMesg class 
   */
   bool receiveMsg(CanMesg* sCMsg);
+  
+  void StartCommunication(bool i);
 
 private:
   int iSocket;                            //variable to store Socket open
   int iNoBytes;                             //variable that stores no of bytes of data
-
-
+  bool start1;
+  int iSentBuffer1 = 0;
+  int iRecievedBuffer1 = 0 ;
   struct sockaddr_can addr;               //object for the struct sockaddr_can
   struct can_frame frame;                 //object for the struct can_frame
   struct ifreq ifr;                       //object for the struct ifreq

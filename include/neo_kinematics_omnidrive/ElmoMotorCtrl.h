@@ -1,10 +1,10 @@
 #ifndef ELMOMOTORCTRL_INCLUDEDEF_H
 #define ELMOMOTORCTRL_INCLUDEDEF_H
+#include <chrono>
 
 #include <neo_kinematics_omnidrive/CanMesg.h>
 #include <neo_kinematics_omnidrive/DriveParameters.h>
 #include <neo_kinematics_omnidrive/SocketCan.h>
-
 
 class ElmoMotorCtrl
 {
@@ -49,7 +49,7 @@ enum HomingStatus
  * @param iRxSDO: receive service data object
  */
 void setCanOpenParam( int iTxPDO1, int iTxPDO2, int iRxPDO2, int iTxSDO, int iRxSDO);
-
+void OpenSocket();
 
 /**
  *Initializes the motor controller , by checking modulo condition and sets velocity motion control &finally configures drives using SDO download
@@ -57,7 +57,7 @@ void setCanOpenParam( int iTxPDO1, int iTxPDO2, int iRxPDO2, int iTxSDO, int iRx
  */
 int initMotorCtrl();
 
-
+void startCommunication();
 /**
  *Interpreter comand sent in binary form used for setting  all numerical data to servo drives
  *@param iDatalen: length of data (int)
@@ -182,6 +182,8 @@ void settingDriveParams(DriveParameters DrParam){m_DriveParameter=DrParam;}
 
 bool m_bLimSwRight;
 
+int b_opened = 0;
+
 
 
 private:
@@ -189,8 +191,10 @@ private:
 /*
  *objects for classes
  */
-SocketCan* m_sCanCtrl;
+SocketCan m_sCanCtrl;
 DriveParameters m_DriveParameter;
+
+
 /*
  *params
  */
@@ -207,5 +211,7 @@ int m_iStatus;                  // status of message
 double m_dMotorCurr;
 double dTorqueConstant = 0.116;  //Torque constant 0.116 Nm/A
 unsigned int m_iDigIn;
+int iTimeElapsed,iTimeSleep, iTimeSleep1, iTimeSleep2;
+std::chrono::steady_clock::time_point t1, t2;
 };
 #endif

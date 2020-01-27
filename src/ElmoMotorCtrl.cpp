@@ -11,7 +11,7 @@ ElmoMotorCtrl::ElmoMotorCtrl()
   m_dPositonGearMeasInRad=0;     //Gear positin measurement in radians
   m_dVelGearMeasInRadS=0;        //Gear velocity measurement in rad/s      
   m_iStatus=0;                   //variable to which stores the bit received value of status register command
-  m_sCanCtrl=new SocketCan();
+  // m_sCanCtrl=new SocketCan();
 }
 
 ElmoMotorCtrl::~ElmoMotorCtrl()
@@ -29,6 +29,12 @@ void ElmoMotorCtrl::setCanOpenParam( int iTxPDO1, int iTxPDO2, int iRxPDO2, int 
 
 }
 
+
+void  ElmoMotorCtrl::OpenSocket()
+{
+   
+    m_sCanCtrl.initSocket();
+}
 
 
 int ElmoMotorCtrl::initMotorCtrl()
@@ -72,7 +78,7 @@ int ElmoMotorCtrl::initMotorCtrl()
   do
   { 
     //recevies the messages   
-    m_sCanCtrl->receiveMsg(&Msg);
+    m_sCanCtrl.receiveMsg(&Msg);
     //checking whether initial positon is set
     if(Msg.getByte(0)=='P' && Msg.getByte(1)=='X')
     {
@@ -159,7 +165,7 @@ void ElmoMotorCtrl::armHoming()
 //   CanMesg Msg;
 //   m_bLimSwRight == false;
 //   setInterpreter(4, 'H', 'M', 1, 0);
-//   m_sCanCtrl->receiveMsg(&Msg);
+//   m_sCanCtrl.receiveMsg(&Msg);
 //   if( (Msg.getByte(0) == 'H') && (Msg.getByte(1) == 'M') )
 //     { 
 //       // status message (homing armed = 1 / disarmed = 0) is encoded in 5th byte
@@ -181,7 +187,7 @@ bool ElmoMotorCtrl::TriggeredCondition()
   // Clear the buffer
   // do
   // {
-  //   bRet = m_sCanCtrl->receiveMsg(&Msg);
+  //   bRet = m_sCanCtrl.receiveMsg(&Msg);
   // }
   // while(bRet == true);
 
@@ -230,7 +236,7 @@ int ElmoMotorCtrl::homingDone()
   // Clear the buffer
   do
   {
-    bRet = m_sCanCtrl->receiveMsg(&Msg);
+    bRet = m_sCanCtrl.receiveMsg(&Msg);
   }
   while(bRet == true);
 
@@ -280,7 +286,7 @@ int ElmoMotorCtrl::turnOnMotor()
   //clearing the can buffer
   do
   {
-    bRet = m_sCanCtrl->receiveMsg(&Msg);
+    bRet = m_sCanCtrl.receiveMsg(&Msg);
   }
   while(bRet == true);
 
@@ -289,7 +295,7 @@ int ElmoMotorCtrl::turnOnMotor()
   iCount=0;
   do
   {
-    m_sCanCtrl->receiveMsg(&Msg);
+    m_sCanCtrl.receiveMsg(&Msg);
     if(Msg.getByte(0)=='S' && Msg.getByte(1)=='R')
     {
       iStatus=(Msg.getByte(4))|(Msg.getByte(5)<<8)|(Msg.getByte(6)<<16)|(Msg.getByte(7)<<24);
@@ -345,7 +351,7 @@ void ElmoMotorCtrl::setVelInRadS(double dGearvelrads)
   setInterpreter(4,'B','G',0,0);
 
   //sending sync message to trigger devices for sending data
-  sendCanMessage(0x80, 0, 0);
+  // sendCanMessage(0x80, 0, 0);
 
   //sending request to evaluate status
   setInterpreter(4,'S','R',0,0);
@@ -360,7 +366,7 @@ void ElmoMotorCtrl::stopMotion()
   bool bRet=true;             //boolean stores the return value of receiveMsg funciton
   do
   {
-    bRet = m_sCanCtrl->receiveMsg(&Msg);
+    bRet = m_sCanCtrl.receiveMsg(&Msg);
   }
   while(bRet == true);
   //To stop the motion of motor
@@ -434,10 +440,11 @@ std::vector <int> ElmoMotorCtrl::evaluatingMessageReceived()
   std::vector <int> viReceivedMsg;
   sendCanMessage(0x80, 0, 0); 
 
+  // std::cout<<"eval-msg \n";
   do
   {   
 
-    bRet=m_sCanCtrl->receiveMsg(&Msg);
+    bRet=m_sCanCtrl.receiveMsg(&Msg);
     //----------------------------------------------------------------------------------------------------------------------------------
 
     if(bRet==true)
@@ -627,7 +634,7 @@ void ElmoMotorCtrl::sendingSDODownload(int iIndex, int iSubindex, int iData)
   cMesg[7]=iData>>24;
 
   msg.set(cMesg[0],cMesg[1],cMesg[2],cMesg[3],cMesg[4],cMesg[5],cMesg[6],cMesg[7]);
-  m_sCanCtrl->transmitMsg(msg);
+  m_sCanCtrl.transmitMsg(msg);
 }
 
 
@@ -653,7 +660,7 @@ void ElmoMotorCtrl::setInterpreter(int iDatalen,char cmdchar1,char cmdchar2,int 
   cInt[3] = iData >> 24;
 
   Cmsg.set(cmdchar1,cmdchar2,cIndex[0],cIndex[1],cInt[0],cInt[1],cInt[2],cInt[3]);
-  m_sCanCtrl->transmitMsg(Cmsg);
+  m_sCanCtrl.transmitMsg(Cmsg);
 
 }
 
@@ -662,6 +669,7 @@ void ElmoMotorCtrl::setInterpreter(int iDatalen,char cmdchar1,char cmdchar2,int 
 
 void ElmoMotorCtrl::sendCanMessage(int iId, int iLen, unsigned char cByte)
 {
+  // std::cout<<"sync msg \n";
   CanMesg msg;                   //object declaration for class CanMesg
   msg.m_iId=iId;                 //message I'd
   msg.m_iLen=iLen;               //message length
@@ -677,7 +685,7 @@ void ElmoMotorCtrl::sendCanMessage(int iId, int iLen, unsigned char cByte)
   cMesg[7]=0;
 
   msg.set(cMesg[0],cMesg[1],cMesg[2],cMesg[3],cMesg[4],cMesg[5],cMesg[6],cMesg[7]);
-  m_sCanCtrl->transmitMsg(msg);
+  m_sCanCtrl.transmitMsg(msg);
 }
 
 
