@@ -2279,14 +2279,18 @@ bool er(double no, double pos, double offset)
     {
       std::cout<<"1:"<<dDeltaPhi<<std::endl;
       DM1.setVelInRadS(1, dVelCmd);
+      DM1.recMessages();
     }
     else if(no == 2)
     {std::cout<<"2:"<<dDeltaPhi<<std::endl;
-      DM2.setVelInRadS(1, dVelCmd);}
+      DM2.setVelInRadS(1, dVelCmd);
+      DM2.recMessages();}
     else if(no == 3)
-    {DM3.setVelInRadS(1, dVelCmd);} 
+    {DM3.setVelInRadS(1, dVelCmd);
+      DM3.recMessages();} 
     else if(no == 4)
-    {DM4.setVelInRadS(1, dVelCmd);}
+    {DM4.setVelInRadS(1, dVelCmd);
+      DM4.recMessages();}
     return homing;
 }
 
@@ -2450,14 +2454,7 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
 
 void NeoKinematicsOmniDrive::timerCallbackCtrlStep(const ros::TimerEvent& e) 
 {
-   aStart = std::chrono::steady_clock::now();
   CalcCtrlStep();
-    auto aEnd = std::chrono::steady_clock::now();
-  iTimeElapse = std::chrono::duration_cast<std::chrono::microseconds>( aEnd - aStart ).count();
-  if(iTimeElapse>2500)
-  {
-    ROS_WARN("Joint command rate exceeded");
-  }
 
 }
 
@@ -2822,7 +2819,8 @@ void NeoKinematicsOmniDrive::CalcCtrlStep()
           T_joint_state_cmd.desired.velocities[i] = vdSteerGearVelRadS[j];
           //joint_state_cmd.effort[i] = 0.0;
           j = j + 1;
-          // std::cout<<
+          // std::cout<<T_joint_state_cmd.desired.positions[i]<<std::endl;
+          // std::cout<<T_joint_state_cmd.desired.velocities[i]<<std::endl;
         }
         else
         {
@@ -2937,6 +2935,8 @@ void NeoKinematicsOmniDrive::Update_Odom()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "NeoKinOmnidrive");                    //initialize ros node  
+  SocketCan SC1;
+  CanMesg Msg;
 
   // ros::NodeHandle n; 
   NeoKinematicsOmniDrive NK1;                                  //ros node handle
@@ -3063,24 +3063,12 @@ int main(int argc, char** argv)
      //  DM3.startCommunication();
      //  DM4.startCommunication();
 
-
+      SC1.receiveMsg(&Msg);
      //receiving the messages and  stores it in vector
-      viRet1= DM1.recMessages(); 
-
-      // auto t2 = std::chrono::steady_clock::now();
-      // iTimeSleep1 = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-      viRet2= DM2.recMessages(); 
-      viRet3= DM3.recMessages(); 
-      viRet4= DM4.recMessages(); 
-
-      viRet.insert(viRet.begin(), viRet1.begin(), viRet1.end());
-      viRet.insert(viRet.end(),viRet2.begin(), viRet2.end());
-      viRet.insert(viRet.end(),viRet3.begin(), viRet3.end());
-      viRet.insert(viRet.end(),viRet4.begin(), viRet4.end());
-      size += viRet1.size();
-      size += viRet2.size();
-      size += viRet3.size();
-      size += viRet4.size();
+      // viRet= DM1.recMessages(); 
+      // viRet2= DM2.recMessages(); 
+      // viRet3= DM3.recMessages(); 
+      // viRet4= DM4.recMessages(); 
 
 
       // std::cout<<size<<std::endl;
@@ -3110,11 +3098,6 @@ int main(int argc, char** argv)
 
 
       }
-        viRet.clear();
-        viRet1.clear();
-        viRet2.clear();
-        viRet3.clear();
-        viRet4.clear();
 
       //if the dirve state is  ST_DRIVE_ERROR
       if(m_iDriveState==ST_DRIVE_ERROR)
@@ -3143,7 +3126,7 @@ int main(int argc, char** argv)
         ROS_INFO("Drive initialized succesfully!");
         ROS_INFO("Use ROS Service start_homing to start homing the drives.");
         // state updated as not homed
-        m_iDriveState=ST_RUNNING;   
+        m_iDriveState=ST_NOT_HOMED;   
       }
 
       else if(m_iDriveState==ST_DRIVE_NOT_INIT)
@@ -3221,6 +3204,10 @@ int main(int argc, char** argv)
             DM2.configureHoming();
             DM3.configureHoming();
             DM4.configureHoming();
+            DM1.recMessages(); 
+            DM2.recMessages();
+            DM3.recMessages();
+            DM4.recMessages(); 
             m_iDriveState = ST_ARM_HOMING;
             aStartTime = std::chrono::steady_clock::now();
           }
@@ -3248,6 +3235,10 @@ int main(int argc, char** argv)
             DM2.armHoming();
             DM3.armHoming();
             DM4.armHoming();
+            DM1.recMessages(); 
+            DM2.recMessages();
+            DM3.recMessages();
+            DM4.recMessages(); 
             m_iDriveState = ST_WAIT_FOR_HOMING;
           }
         }
@@ -3275,6 +3266,10 @@ int main(int argc, char** argv)
         bool bhm_done2 = DM2.homingDone();
         bool bhm_done3 = DM3.homingDone(); 
         bool bhm_done4 = DM4.homingDone(); 
+        DM1.recMessages(); 
+        DM2.recMessages();
+        DM3.recMessages();
+        DM4.recMessages(); 
 
         if(bhm_done == 1 )
           {
@@ -3321,13 +3316,13 @@ int main(int argc, char** argv)
         DM1.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos1 = vdPosGearRad[1];
         homing = er(1,pos1, 0.042);
-        DM1.recMessages(); 
+        // DM1.recMessages(); 
         usleep(20000);
 
         DM2.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos2 = vdPosGearRad[1];
         homing1 = er(2,pos2, 0.042);
-        DM2.recMessages(); 
+        // DM2.recMessages(); 
         usleep(20000);
 
         DM3.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
@@ -3335,14 +3330,14 @@ int main(int argc, char** argv)
         homing2 = er(3,pos3, 0.042);
         usleep(20000);
 
-        DM3.recMessages(); 
+        // DM3.recMessages(); 
 
         DM4.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos4 = vdPosGearRad[1];
         homing3 = er(4,pos4, 0.042);
         usleep(20000);
 
-        DM4.recMessages();
+        // DM4.recMessages();
 
         if(homing*homing1*homing2*homing3 == 1)
         {m_iDriveState = ST_RUNNING;}
@@ -3369,6 +3364,11 @@ int main(int argc, char** argv)
         {
           ROS_INFO_ONCE("Running"); 
          NK1.JointStatesMeasure();
+          DM1.recMessages(); 
+          DM2.recMessages();
+          DM3.recMessages();
+          DM4.recMessages(); 
+
           iFST_Running++;
         }
         

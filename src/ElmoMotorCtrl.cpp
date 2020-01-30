@@ -3,7 +3,9 @@
 #include <unistd.h>
 #include <neo_kinematics_omnidrive/SocketCan.h>
 #include <chrono>
+#include <mutex>
 using namespace std::chrono;
+std::mutex m;
 
 
 ElmoMotorCtrl::ElmoMotorCtrl()
@@ -79,6 +81,7 @@ int ElmoMotorCtrl::initMotorCtrl()
   { 
     //recevies the messages   
     m_sCanCtrl.receiveMsg(&Msg);
+    // std::cout<<"eval \n";
     //checking whether initial positon is set
     if(Msg.getByte(0)=='P' && Msg.getByte(1)=='X')
     {
@@ -373,7 +376,7 @@ void ElmoMotorCtrl::stopMotion()
   setInterpreter(4,'S','T',0,0);
   
   //sending sync message to trigger devices for sending data
-  sendCanMessage(0x80, 0, 0);
+  // sendCanMessage(0x80, 0, 0);
 }
 
 int ElmoMotorCtrl::evaluateStatusRegister(int iStatus)
@@ -441,7 +444,10 @@ std::vector <int> ElmoMotorCtrl::evaluatingMessageReceived()
   // sendCanMessage(0x80, 0, 0); 
 
   // std::cout<<"eval-msg \n";
-  do
+  // m.lock();
+ 
+    //----------------------------------------------------------------------------------------------------------------------------------
+   do
   {   
 
     bRet=m_sCanCtrl.receiveMsg(&Msg);
@@ -544,7 +550,7 @@ std::vector <int> ElmoMotorCtrl::evaluatingMessageReceived()
 
   }while(bRet==true);
 
-
+// m.unlock();
 
   return viReceivedMsg;
 }
@@ -592,7 +598,7 @@ void ElmoMotorCtrl::setGearTor(double dTorqueNm)
 
   // setInterpreter(4,'B','G',0,0);
 
-  sendCanMessage(0x80, 0, 0);
+  // sendCanMessage(0x80, 0, 0);
 
 
 

@@ -19,6 +19,8 @@
 #include<NeoMath.h>
 #include <sensor_msgs/JointState.h>
 #include <neo_kinematics_omnidrive/SocketCan.h>
+#include <neo_kinematics_omnidrive/CanMesg.h>
+
 
 
 
