@@ -3069,9 +3069,9 @@ int main(int argc, char** argv)
 
       // auto t2 = std::chrono::steady_clock::now();
       // iTimeSleep1 = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-      // viRet2= DM2.recMessages(); 
-      // viRet3= DM3.recMessages(); 
-      // viRet4= DM4.recMessages(); 
+      viRet2= DM2.recMessages(); 
+      viRet3= DM3.recMessages(); 
+      viRet4= DM4.recMessages(); 
 
       viRet.insert(viRet.begin(), viRet1.begin(), viRet1.end());
       viRet.insert(viRet.end(),viRet2.begin(), viRet2.end());
@@ -3143,7 +3143,7 @@ int main(int argc, char** argv)
         ROS_INFO("Drive initialized succesfully!");
         ROS_INFO("Use ROS Service start_homing to start homing the drives.");
         // state updated as not homed
-        m_iDriveState=ST_NOT_HOMED;   
+        m_iDriveState=ST_RUNNING;   
       }
 
       else if(m_iDriveState==ST_DRIVE_NOT_INIT)

@@ -351,7 +351,7 @@ void ElmoMotorCtrl::setVelInRadS(double dGearvelrads)
   setInterpreter(4,'B','G',0,0);
 
   //sending sync message to trigger devices for sending data
-  // sendCanMessage(0x80, 0, 0);
+  sendCanMessage(0x80, 0, 0);
 
   //sending request to evaluate status
   setInterpreter(4,'S','R',0,0);
@@ -438,7 +438,7 @@ std::vector <int> ElmoMotorCtrl::evaluatingMessageReceived()
 
   //sending sync message to trigger devices for sending data
   std::vector <int> viReceivedMsg;
-  sendCanMessage(0x80, 0, 0); 
+  // sendCanMessage(0x80, 0, 0); 
 
   // std::cout<<"eval-msg \n";
   do

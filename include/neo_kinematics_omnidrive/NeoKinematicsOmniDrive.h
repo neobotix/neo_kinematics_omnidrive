@@ -203,7 +203,7 @@ class NeoKinematicsOmniDrive
 
 
 		// Publishers
-		timer_ctrl_step_ = n.createTimer(ros::Duration(0.04), &NeoKinematicsOmniDrive::timerCallbackCtrlStep, this);
+		timer_ctrl_step_ = n.createTimer(ros::Duration(0.02), &NeoKinematicsOmniDrive::timerCallbackCtrlStep, this);
 
 
 		// pubJointStates = n.advertise<sensor_msgs::JointState>("/joint_states", 100);
