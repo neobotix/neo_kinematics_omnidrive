@@ -49,7 +49,7 @@ int ElmoMotorCtrl::initMotorCtrl()
   CanMesg Msg;                                          // object for can message  
 
   //turn of motor
-  setInterpreter(8, 'M', 'O', 0, 0);
+  // setInterpreter(8, 'M', 'O', 0, 0);
 
   setInterpreter(8, 'X', 'M', 2,m_DriveParameter.getModulo());
 
@@ -57,7 +57,7 @@ int ElmoMotorCtrl::initMotorCtrl()
 
 
   //setting velocity as motion control( so as per manual following commands should be performed pg-77)
-  setInterpreter(8, 'M', 'O', 0, 0);
+  // setInterpreter(8, 'M', 'O', 0, 0);
 
   //switch to unit mode 2
   setInterpreter(8, 'U', 'M', 0, 2);
@@ -196,9 +196,13 @@ bool ElmoMotorCtrl::TriggeredCondition()
 
   // Interpreter set
 	// std::cout<<m_iDigIn<<std::endl;
-	setInterpreter(4, 'I', 'P', 0, 16);
-	evaluatingMessageReceived();
+  setInterpreter(4, 'I', 'P', 0, 16);
+  sendCanMessage(0x80, 0, 0); 
+
+  evaluatingMessageReceived();
   setInterpreter(4,'S','R',0,0);
+  sendCanMessage(0x80, 0, 0); 
+
   evaluatingMessageReceived();
   if( (m_iDigIn & (unsigned int)m_DriveParameter.getHomDigIn())== 0x0000 )
   { 

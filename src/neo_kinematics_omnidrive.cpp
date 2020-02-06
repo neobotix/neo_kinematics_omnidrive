@@ -2259,13 +2259,13 @@ bool srvCallback_Homing(neo_kinematics_omnidrive::Homing::Request  &req, neo_kin
   
   return true;
 }
-bool er(double no, double pos, double offset)
+bool er(double no, double pos)
 {
 
     bool homing = true;
     double dDeltaPhi = 0.0 - pos;
     // std::cout<<dDeltaPhi<<","<<no<<std::endl;
-    if (fabs(dDeltaPhi) < offset) //alter Wert=0.03
+    if (fabs(dDeltaPhi) < 0.042) //alter Wert=0.03
       {
       dDeltaPhi = 0;
       } 
@@ -2276,21 +2276,13 @@ bool er(double no, double pos, double offset)
     double dVelCmd = 0.85 * dDeltaPhi;
 
     if(no == 1)
-    {
-      std::cout<<"1:"<<dDeltaPhi<<std::endl;
-      DM1.setVelInRadS(1, dVelCmd);
-      DM1.recMessages();
-    }
+    {DM1.setVelInRadS(1, dVelCmd);}
     else if(no == 2)
-    {std::cout<<"2:"<<dDeltaPhi<<std::endl;
-      DM2.setVelInRadS(1, dVelCmd);
-      DM2.recMessages();}
+    {DM2.setVelInRadS(1, dVelCmd);}
     else if(no == 3)
-    {DM3.setVelInRadS(1, dVelCmd);
-      DM3.recMessages();} 
+    {DM3.setVelInRadS(1, dVelCmd);} 
     else if(no == 4)
-    {DM4.setVelInRadS(1, dVelCmd);
-      DM4.recMessages();}
+    {DM4.setVelInRadS(1, dVelCmd);}
     return homing;
 }
 
@@ -2470,16 +2462,16 @@ void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajec
 
     JointStateCmdM1.position.resize(2);
     JointStateCmdM1.velocity.resize(2);
-    JointStateCmdM1.effort.resize(2);
+    // JointStateCmdM1.effort.resize(2);
     JointStateCmdM2.position.resize(2);
     JointStateCmdM2.velocity.resize(2);
     JointStateCmdM2.effort.resize(2);
     JointStateCmdM3.position.resize(2);
     JointStateCmdM3.velocity.resize(2);
-    JointStateCmdM3.effort.resize(2);
+    // JointStateCmdM3.effort.resize(2);
     JointStateCmdM4.position.resize(2);
     JointStateCmdM4.velocity.resize(2);
-    JointStateCmdM4.effort.resize(2);
+    // JointStateCmdM4.effort.resize(2);
 
 
     for(unsigned int i = 0; i < msg->joint_names.size(); i++)
@@ -2932,6 +2924,26 @@ void NeoKinematicsOmniDrive::Update_Odom()
 
 }
 
+void NeoKinematicsOmniDrive::JointTorqueMeasure()
+{
+  std::vector<double> dTorqueWheel1, dTorqueWheel2, dTorqueWheel3, dTorqueWheel4 ;
+
+  dTorqueWheel1.resize(2,0);
+  dTorqueWheel2.resize(2,0);
+  dTorqueWheel3.resize(2,0);
+  dTorqueWheel4.resize(2,0);
+  std_msgs::Float64 dTorqueRobot;
+
+  DM1.getGearTor(0,&dTorqueWheel1[0]);
+  DM2.getGearTor(0,&dTorqueWheel2[0]);
+  DM3.getGearTor(0,&dTorqueWheel3[0]);
+  DM4.getGearTor(0,&dTorqueWheel4[0]);
+
+  dTorqueRobot.data = (dTorqueWheel1[0] + dTorqueWheel2[0] + dTorqueWheel3[0] + dTorqueWheel4[0])/4.0;
+
+  pub_Torque.publish(dTorqueRobot);
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "NeoKinOmnidrive");                    //initialize ros node  
@@ -3048,9 +3060,9 @@ int main(int argc, char** argv)
    bool status2;
    bool status3;
    bool status4;
-  NK1.NC1.InitParams(iNumOfJoints, iWheelDistMM,  iWheelRadiusMM, dTransMaxVelocity,  dRadMaxVelocity,  iSteerAxisDistToDriveWheelMM, 
-  dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
-  vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
+  // NK1.NC1.InitParams(iNumOfJoints, iWheelDistMM,  iWheelRadiusMM, dTransMaxVelocity,  dRadMaxVelocity,  iSteerAxisDistToDriveWheelMM, 
+  // dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
+  // vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
   int size = 0;
 
    while (ros::ok())
@@ -3063,7 +3075,7 @@ int main(int argc, char** argv)
      //  DM3.startCommunication();
      //  DM4.startCommunication();
 
-      SC1.receiveMsg(&Msg);
+      // SC1.receiveMsg(&Msg);
      //receiving the messages and  stores it in vector
       // viRet= DM1.recMessages(); 
       // viRet2= DM2.recMessages(); 
@@ -3156,13 +3168,13 @@ int main(int argc, char** argv)
         if(bEMstate != 1)
         {
           s1 = DM4.TriggeredCondition();
-          DM4.recMessages();
+          // DM4.recMessages();
           s2 = DM3.TriggeredCondition();
-          DM3.recMessages();
+          // DM3.recMessages();
           s3 = DM2.TriggeredCondition();
-          DM2.recMessages();
+          // DM2.recMessages();
           s4 = DM1.TriggeredCondition();
-          DM1.recMessages();
+          // DM1.recMessages();
           if((s1 && s2 && s3 && s4) == true && flag == 0)
           {
           ROS_INFO_ONCE("Avoiding the garbage - Debug");
@@ -3204,10 +3216,10 @@ int main(int argc, char** argv)
             DM2.configureHoming();
             DM3.configureHoming();
             DM4.configureHoming();
-            DM1.recMessages(); 
-            DM2.recMessages();
-            DM3.recMessages();
-            DM4.recMessages(); 
+            // DM1.recMessages(); 
+            // DM2.recMessages();
+            // DM3.recMessages();
+            // DM4.recMessages(); 
             m_iDriveState = ST_ARM_HOMING;
             aStartTime = std::chrono::steady_clock::now();
           }
@@ -3235,10 +3247,10 @@ int main(int argc, char** argv)
             DM2.armHoming();
             DM3.armHoming();
             DM4.armHoming();
-            DM1.recMessages(); 
-            DM2.recMessages();
-            DM3.recMessages();
-            DM4.recMessages(); 
+            // DM1.recMessages(); 
+            // DM2.recMessages();
+            // DM3.recMessages();
+            // DM4.recMessages(); 
             m_iDriveState = ST_WAIT_FOR_HOMING;
           }
         }
@@ -3266,10 +3278,10 @@ int main(int argc, char** argv)
         bool bhm_done2 = DM2.homingDone();
         bool bhm_done3 = DM3.homingDone(); 
         bool bhm_done4 = DM4.homingDone(); 
-        DM1.recMessages(); 
-        DM2.recMessages();
-        DM3.recMessages();
-        DM4.recMessages(); 
+        // DM1.recMessages(); 
+        // DM2.recMessages();
+        // DM3.recMessages();
+        // DM4.recMessages(); 
 
         if(bhm_done == 1 )
           {
@@ -3310,36 +3322,41 @@ int main(int argc, char** argv)
         //Todo Need to change the sleep with a efficient time function.
 
 
-        ROS_INFO_ONCE("Errors?");
+       ROS_INFO_ONCE("Errors?");
         aStartTime1 = std::chrono::steady_clock::now();
         
         DM1.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos1 = vdPosGearRad[1];
-        homing = er(1,pos1, 0.042);
-        // DM1.recMessages(); 
+        homing = er(1,pos1);
+        DM1.recMessages(); 
         usleep(20000);
 
         DM2.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos2 = vdPosGearRad[1];
-        homing1 = er(2,pos2, 0.042);
-        // DM2.recMessages(); 
+        homing1 = er(2,pos2);
+        DM2.recMessages(); 
         usleep(20000);
 
         DM3.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos3 = vdPosGearRad[1];
-        homing2 = er(3,pos3, 0.042);
+        homing2 = er(3,pos3);
         usleep(20000);
 
-        // DM3.recMessages(); 
+        DM3.recMessages(); 
 
         DM4.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos4 = vdPosGearRad[1];
-        homing3 = er(4,pos4, 0.042);
+        homing3 = er(4,pos4);
         usleep(20000);
+
+        DM4.recMessages();
 
         // DM4.recMessages();
 
         if(homing*homing1*homing2*homing3 == 1)
+        // {
+        //   ROS_INFO_ONCE("Finished");
+        // }
         {m_iDriveState = ST_RUNNING;}
 
       }
@@ -3363,7 +3380,8 @@ int main(int argc, char** argv)
         if(bIsIntialised == true && iFST_Running>=0)
         {
           ROS_INFO_ONCE("Running"); 
-         NK1.JointStatesMeasure();
+          NK1.JointStatesMeasure();
+          NK1.JointTorqueMeasure();
           DM1.recMessages(); 
           DM2.recMessages();
           DM3.recMessages();

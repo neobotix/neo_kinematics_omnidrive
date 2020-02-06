@@ -20,7 +20,7 @@
 #include <sensor_msgs/JointState.h>
 #include <neo_kinematics_omnidrive/SocketCan.h>
 #include <neo_kinematics_omnidrive/CanMesg.h>
-
+#include "std_msgs/Float64.h"
 
 
 
@@ -169,6 +169,7 @@ class NeoKinematicsOmniDrive
 		ros::Publisher pubJointControllerStates;
 		ros::Publisher pub_Joint_controller;
 		ros::Publisher pub_Odometry;
+		ros::Publisher pub_Torque;
   		ros::NodeHandle n;   //ros node handle
 
 	// Subscriber initialisation
@@ -210,24 +211,26 @@ class NeoKinematicsOmniDrive
 
 		// pubJointStates = n.advertise<sensor_msgs::JointState>("/joint_states", 100);
 
-		pubJointControllerStates =  n.advertise<control_msgs::JointTrajectoryControllerState>("/controller_state", 1000);
+		pubJointControllerStates =  n.advertise<control_msgs::JointTrajectoryControllerState>("/controller_state", 1);
 
 
 	// // 	// Navigation - Odometry 
-		pub_Odometry = n.advertise<nav_msgs::Odometry>("/odometry", 1000);
+		pub_Odometry = n.advertise<nav_msgs::Odometry>("/odometry", 1);
 
 	// // Subscribers
-		sub_JointStateCmd = n.subscribe("/joint_command", 1000, &NeoKinematicsOmniDrive::topicCBJointCommand, this, ros::TransportHints().tcpNoDelay(true));
+		sub_JointStateCmd = n.subscribe("/joint_command", 1, &NeoKinematicsOmniDrive::topicCBJointCommand, this, ros::TransportHints().tcpNoDelay(true));
 
 		// // Recieves the joint states. Used for inverse kinematics calculation.
-		sub_Joint_States = n.subscribe("/controller_state", 1000, &NeoKinematicsOmniDrive::topicCBJointStates, this, ros::TransportHints().tcpNoDelay(true)); 
+		sub_Joint_States = n.subscribe("/controller_state", 1, &NeoKinematicsOmniDrive::topicCBJointStates, this, ros::TransportHints().tcpNoDelay(true)); 
 
 
 		// 		// Joint trajectory controller allows us to control a joint by it's position, velocity or effort. 
-		pub_Joint_controller =  n.advertise<control_msgs::JointTrajectoryControllerState> ("/joint_command", 1000);
+		pub_Joint_controller =  n.advertise<control_msgs::JointTrajectoryControllerState> ("/joint_command", 1);
 
 		// Subscribers for the user's command velocity, that the robot need to process.
-		sub_Commanded_Twist = n.subscribe("/cmd_vel", 1000, &NeoKinematicsOmniDrive::topicCBTwistCmd, this, ros::TransportHints().tcpNoDelay(true)); 
+		sub_Commanded_Twist = n.subscribe("/cmd_vel", 1, &NeoKinematicsOmniDrive::topicCBTwistCmd, this, ros::TransportHints().tcpNoDelay(true)); 
+
+		pub_Torque = n.advertise<std_msgs::Float64>("measured_torque", 1);
 
 		}
 
@@ -250,6 +253,8 @@ class NeoKinematicsOmniDrive
 		void CalcCtrlStep();
 
 		void Update_Odom();
+
+		void JointTorqueMeasure();
 
 		// void StartCommunication();
 

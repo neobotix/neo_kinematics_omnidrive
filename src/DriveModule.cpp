@@ -268,14 +268,11 @@ std::vector <int> DriveModule::recMessages()
 {
   std::vector <int> viReturn;
   //evlauating the recevied messges
-  t1 = std::chrono::steady_clock::now();
 
   viReturn= Drive.evaluatingMessageReceived();
 
   viReturn=Steer.evaluatingMessageReceived();
-
-  auto t2 = std::chrono::steady_clock::now();
-  iTimeSleep1 = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+  
   // std::cout<<iTimeSleep1<<std::endl;
   return viReturn;
 
