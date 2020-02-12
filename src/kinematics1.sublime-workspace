@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"True",
+				"true"
+			],
+			[
+				"dTorq",
+				"dTorqueWheel1"
+			],
+			[
+				"pub_",
+				"pub_Torque"
+			],
+			[
 				"can",
 				"can_id"
 			],
@@ -502,18 +514,6 @@
 			[
 				"active",
 				"active_usboard"
-			],
-			[
-				"Publ",
-				"PublishRelayBoardState"
-			],
-			[
-				"names",
-				"namespace"
-			],
-			[
-				"time_poi",
-				"time_point"
 			]
 		]
 	},
@@ -530,7 +530,7 @@
 			"file": "neo_kinematics_omnidrive.cpp",
 			"settings":
 			{
-				"buffer_size": 93344,
+				"buffer_size": 93813,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -540,6 +540,52 @@
 			"settings":
 			{
 				"buffer_size": 5541,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/launch/mpo_700_CanCtrl.yaml",
+			"settings":
+			{
+				"buffer_size": 5541,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/src/ElmoMotorCtrl.cpp",
+			"settings":
+			{
+				"buffer_size": 19618,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/src/SocketCan.cpp",
+			"settings":
+			{
+				"buffer_size": 2539,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/src/neo_kinematics_omnidrive.cpp",
+			"settings":
+			{
+				"buffer_size": 60318,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/ElmoMotorCtrl.h",
+			"settings":
+			{
+				"buffer_size": 4304,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
@@ -556,6 +602,7 @@
 			"settings":
 			{
 				"buffer_size": 4457,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
@@ -579,7 +626,7 @@
 			"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/NeoKinematicsOmniDrive.h",
 			"settings":
 			{
-				"buffer_size": 7364,
+				"buffer_size": 7402,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -597,8 +644,16 @@
 			"file": "ElmoMotorCtrl.cpp",
 			"settings":
 			{
-				"buffer_size": 19988,
+				"buffer_size": 20054,
 				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/DriveParameters.h",
+			"settings":
+			{
+				"buffer_size": 4788,
 				"line_ending": "Unix"
 			}
 		},
@@ -653,11 +708,7 @@
 	"expanded_folders":
 	[
 		"/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive",
-		"/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include",
-		"/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive",
-		"/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/launch",
-		"/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/src",
-		"/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/srv"
+		"/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/src"
 	],
 	"file_history":
 	[
@@ -806,6 +857,30 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"m_MotorSteer2",
+			"std::cout",
+			"er(",
+			"TriggeredCondition",
+			"arm",
+			"arming",
+			"configureHoming",
+			"er(",
+			"er",
+			"0.42",
+			"TriggeredCondition",
+			"bool er(",
+			"homingDone",
+			"m_sCanCtrl.",
+			"m.lock",
+			"m.;ock",
+			"mutex",
+			"NK1.n",
+			"bool er",
+			"configureHoming",
+			"m_iEncOffsetIncrement",
+			"er",
+			"getgeartor",
+			"getgear",
 			"NC1",
 			"setVel",
 			"m_iDriveState",
@@ -909,31 +984,7 @@
 			"std::cout",
 			"m_dVel_rad_cmd",
 			"SetRequiredWheelPoses",
-			"m_vdSteerGearAngRad",
-			"dVelCmdInt",
-			"m_vdSteerGearVelCmdRadS",
-			"SetRequiredWheelPoses",
-			"m_vdDriveGearVelTargetRadS",
-			"WheelPos",
-			"m_vdSteerGearAngRad",
-			"m_vdSteerGearAngCmdRad",
-			"/m_vdSteerGearAngCmdRad",
-			"/1000",
-			"Node",
-			"-",
-			"m_vdSteerGearAngRad",
-			"m_vdSteerGearVelRadS",
-			"m_vdSteerGearAngRad",
-			"m_vdExWheelAngRad",
-			"m_vdWheelAngRad",
-			"m_vdWheelPosXMM",
-			"atan4quad",
-			"m_vdSteerGearAngTargetRad",
-			"m_vdSteerGearVelCmdRadS",
-			"m_vdSteerGearAngRad",
-			"m_vdSteerGearAngTarget2Rad",
-			"m_vdExWheelDistMM",
-			"atan4quad"
+			"m_vdSteerGearAngRad"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -941,6 +992,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"m_sCanCtrl->",
+			"n",
 			"Drive.",
 			"transmitMsg(Cmsg, true);",
 			"transmitMsg(msg, true);",
@@ -1002,7 +1055,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
@@ -1011,15 +1064,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 93344,
+						"buffer_size": 93813,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								92298,
-								92298
+								489,
+								489
 							]
 						],
 						"settings":
@@ -1029,7 +1082,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 60213.0,
+						"translation.y": 32617.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1038,10 +1091,100 @@
 				{
 					"buffer": 2,
 					"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/launch/mpo_700_CanCtrl.yaml",
-					"semi_transient": true,
+					"semi_transient": false,
 					"settings":
 					{
 						"buffer_size": 5541,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5541,
+								5541
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/YAML/YAML.sublime-syntax",
+							"tab_size": 3,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1242.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/launch/mpo_700_CanCtrl.yaml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5541,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5541,
+								5541
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/YAML/YAML.sublime-syntax",
+							"tab_size": 3,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2703.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/src/ElmoMotorCtrl.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 19618,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6226,
+								6226
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3816.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/src/SocketCan.cpp",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 2539,
 						"regions":
 						{
 						},
@@ -1054,19 +1197,77 @@
 						],
 						"settings":
 						{
-							"syntax": "Packages/YAML/YAML.sublime-syntax",
-							"tab_size": 3,
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 594.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 6,
+					"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/src/neo_kinematics_omnidrive.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 60318,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								55119,
+								55119
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 39762.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/home/pradheep/homingtest/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/ElmoMotorCtrl.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4304,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4293,
+								4293
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 3240.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
 					"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/SocketCan.h",
 					"semi_transient": false,
 					"settings":
@@ -1078,8 +1279,8 @@
 						"selection":
 						[
 							[
-								371,
-								371
+								541,
+								541
 							]
 						],
 						"settings":
@@ -1089,14 +1290,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 280.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 9,
 					"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/ElmoMotorCtrl.h",
 					"semi_transient": false,
 					"settings":
@@ -1108,8 +1309,8 @@
 						"selection":
 						[
 							[
-								2388,
-								2388
+								1651,
+								1651
 							]
 						],
 						"settings":
@@ -1117,14 +1318,14 @@
 							"syntax": "Packages/C++/C++.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1810.0,
+						"translation.y": 874.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 10,
 					"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/DriveModule.h",
 					"semi_transient": false,
 					"settings":
@@ -1136,8 +1337,8 @@
 						"selection":
 						[
 							[
-								2479,
-								2479
+								1648,
+								1648
 							]
 						],
 						"settings":
@@ -1145,14 +1346,14 @@
 							"syntax": "Packages/C++/C++.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1260.0,
+						"translation.y": 414.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 11,
 					"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/NeoKinematics.h",
 					"semi_transient": false,
 					"settings":
@@ -1177,24 +1378,24 @@
 						"translation.y": 918.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 12,
 					"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/NeoKinematicsOmniDrive.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7364,
+						"buffer_size": 7402,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7277,
-								7277
+								6750,
+								6750
 							]
 						],
 						"settings":
@@ -1203,14 +1404,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 4032.0,
+						"translation.y": 3418.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 13,
 					"file": "DriveModule.cpp",
 					"semi_transient": false,
 					"settings":
@@ -1222,8 +1423,8 @@
 						"selection":
 						[
 							[
-								6745,
-								6745
+								6390,
+								6390
 							]
 						],
 						"settings":
@@ -1233,27 +1434,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 4338.0,
+						"translation.y": 4104.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 14,
 					"file": "ElmoMotorCtrl.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 19988,
+						"buffer_size": 20054,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								10873,
-								10873
+								2046,
+								2046
 							]
 						],
 						"settings":
@@ -1263,14 +1464,42 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 8964.0,
+						"translation.y": 630.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 15,
+					"file": "/home/pradheep/neo_mpo700_kinematics/src/neo_kinematics_omnidrive/include/neo_kinematics_omnidrive/DriveParameters.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4788,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1533,
+								1533
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1548.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 15,
+					"type": "text"
+				},
+				{
+					"buffer": 16,
 					"file": "SocketCan.cpp",
 					"semi_transient": false,
 					"settings":
@@ -1282,8 +1511,8 @@
 						"selection":
 						[
 							[
-								1359,
-								1359
+								190,
+								190
 							]
 						],
 						"settings":
@@ -1293,14 +1522,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 594.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 17,
 					"file": "neo_kinematics.cpp",
 					"semi_transient": false,
 					"settings":
@@ -1322,10 +1551,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 5724.0,
+						"translation.y": 6912.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 11,
 					"type": "text"
 				}
 			]

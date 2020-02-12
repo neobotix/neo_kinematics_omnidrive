@@ -2267,10 +2267,12 @@ bool er(double no, double pos)
     // std::cout<<dDeltaPhi<<","<<no<<std::endl;
     if (fabs(dDeltaPhi) < 0.042) //alter Wert=0.03
       {
+        // std::cout<<"1"<<std::endl;
       dDeltaPhi = 0;
       } 
     else
       {
+        // std::cout<<"2"<<std::endl;
       homing = false;
       }
     double dVelCmd = 0.85 * dDeltaPhi;
@@ -3060,9 +3062,9 @@ int main(int argc, char** argv)
    bool status2;
    bool status3;
    bool status4;
-  // NK1.NC1.InitParams(iNumOfJoints, iWheelDistMM,  iWheelRadiusMM, dTransMaxVelocity,  dRadMaxVelocity,  iSteerAxisDistToDriveWheelMM, 
-  // dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
-  // vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
+  NK1.NC1.InitParams(iNumOfJoints, iWheelDistMM,  iWheelRadiusMM, dTransMaxVelocity,  dRadMaxVelocity,  iSteerAxisDistToDriveWheelMM, 
+  dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
+  vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
   int size = 0;
 
    while (ros::ok())
@@ -3208,6 +3210,7 @@ int main(int argc, char** argv)
       { 
         auto aEndTime = std::chrono::steady_clock::now();
         iTimeSleep = std::chrono::duration_cast<std::chrono::microseconds>( aEndTime - aStartTime ).count();
+        ROS_INFO_ONCE("Configure homing");
         if(bEMstate != 1)
         {
         if(iTimeSleep>100000)
@@ -3236,7 +3239,6 @@ int main(int argc, char** argv)
         auto aEndTime = std::chrono::steady_clock::now();
         iTimeSleep = std::chrono::duration_cast<std::chrono::microseconds>( aEndTime - aStartTime ).count();
         //if time elapsed less than the give time for arm homing
-        //waiting for 5 seconds before arming
         if(bEMstate != 1)
         {
         if(iTimeSleep>100000)
@@ -3270,6 +3272,7 @@ int main(int argc, char** argv)
         auto aEndTime = std::chrono::steady_clock::now();
         iTimeSleep = std::chrono::duration_cast<std::chrono::microseconds>( aEndTime - aStartTime1 ).count();
         // Waiting fot the homing to finish
+        // std::cout<<iTimeSleep<<std::endl;
         if(iTimeSleep>100000)
         {
         while(m_iDriveState != ST_ERROR_CORRECTION)
@@ -3321,12 +3324,16 @@ int main(int argc, char** argv)
 
         //Todo Need to change the sleep with a efficient time function.
 
+        // std::cout<<"S"
 
-       ROS_INFO_ONCE("Errors?");
+        while(m_iDriveState != ST_RUNNING)
+        {ROS_INFO_ONCE("Errors?");
         aStartTime1 = std::chrono::steady_clock::now();
+        // std::cout<<"Here";
         
         DM1.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos1 = vdPosGearRad[1];
+        DM1.recMessages(); 
         homing = er(1,pos1);
         DM1.recMessages(); 
         usleep(20000);
@@ -3340,16 +3347,16 @@ int main(int argc, char** argv)
         DM3.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos3 = vdPosGearRad[1];
         homing2 = er(3,pos3);
+        DM3.recMessages(); 
         usleep(20000);
 
-        DM3.recMessages(); 
 
         DM4.getGearPosAndVel(1, &vdPosGearRad[1], &vdVelGearRadS[1]);
         double pos4 = vdPosGearRad[1];
         homing3 = er(4,pos4);
+        DM4.recMessages();
         usleep(20000);
 
-        DM4.recMessages();
 
         // DM4.recMessages();
 
@@ -3358,6 +3365,7 @@ int main(int argc, char** argv)
         //   ROS_INFO_ONCE("Finished");
         // }
         {m_iDriveState = ST_RUNNING;}
+        }
 
       }
 

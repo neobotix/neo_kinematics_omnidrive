@@ -251,8 +251,13 @@ int ElmoMotorCtrl::homingDone()
   // std::cout<<m_iDigIn<<std::endl;
 
  	setInterpreter(4, 'I', 'P', 0, 16);
-	evaluatingMessageReceived();
+    sendCanMessage(0x80, 0, 0); 
+
+	// evaluatingMessageReceived();
+
   setInterpreter(4,'S','R',0,0);
+    sendCanMessage(0x80, 0, 0); 
+
   evaluatingMessageReceived();
   if( (m_iDigIn & (unsigned int)m_DriveParameter.getHomDigIn())== 0x0000 )
   { 
