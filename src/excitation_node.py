@@ -12,7 +12,7 @@ import time
 def main():
 	# Generating parameters
 	time_set = np.arange(0., 50.01, 0.01)
-	freq = 1
+	freq = 5
 	np.random.seed(10)
 	amplitude_a_offset = (np.sin(time_set*freq))*0.1 + 0.2
 	# ROS Node

@@ -2920,7 +2920,7 @@ void NeoKinematicsOmniDrive::Update_Odom()
   odom_top.twist.twist.angular.z = dVel_rad_cmd;
   for(int i = 0; i < 6; i++)
   {odom_top.twist.covariance[6*i+i] = 0.1;}
-
+  myfile1 << ros::Time::now()<<","<<dVel_rad_cmd<<"\n";
   // publish odometry msg
   pub_Odometry.publish(odom_top);
 
@@ -2941,7 +2941,10 @@ void NeoKinematicsOmniDrive::JointTorqueMeasure()
   DM3.getGearTor(0,&dTorqueWheel3[0]);
   DM4.getGearTor(0,&dTorqueWheel4[0]);
 
-  dTorqueRobot.data = (dTorqueWheel1[0] + dTorqueWheel2[0] + dTorqueWheel3[0] + dTorqueWheel4[0])/4.0;
+  dTorqueRobot.data = (abs(dTorqueWheel1[0]) + abs(dTorqueWheel2[0]) + abs(dTorqueWheel3[0]) + abs(dTorqueWheel4[0]))/4.0;
+  myfile << ros::Time::now()<<","<<dTorqueRobot.data<<"\n";
+
+
 
   pub_Torque.publish(dTorqueRobot);
 }
@@ -2951,7 +2954,11 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "NeoKinOmnidrive");                    //initialize ros node  
   SocketCan SC1;
   CanMesg Msg;
-
+  std::vector<double> dTorqueWheel1, dTorqueWheel2, dTorqueWheel3, dTorqueWheel4 ;
+  dTorqueWheel1.resize(2,0);
+  dTorqueWheel2.resize(2,0);
+  dTorqueWheel3.resize(2,0);
+  dTorqueWheel4.resize(2,0);
   // ros::NodeHandle n; 
   NeoKinematicsOmniDrive NK1;                                  //ros node handle
   std::vector <int> viRet,viRet1,viRet2,viRet3,viRet4;                                     //vector that stores the return value of recMessages() function
@@ -2965,6 +2972,20 @@ int main(int argc, char** argv)
   vdVelGearRadS.resize(2,0);
   vdTorGear.resize(2,0);
 
+  std::vector<double> vdPosGearRad1,vdVelGearRadS1;
+  vdPosGearRad1.resize(2,0);
+  vdVelGearRadS1.resize(2,0);
+  std::vector<double> vdPosGearRad2,vdVelGearRadS2;
+  vdPosGearRad2.resize(2,0);
+  vdVelGearRadS2.resize(2,0);
+  std::vector<double> vdPosGearRad3,vdVelGearRadS3;
+  vdPosGearRad3.resize(2,0);
+  vdVelGearRadS3.resize(2,0);
+  vdSteerPosWheelXMM.assign(4,0);
+  vdSteerPosWheelYMM.assign(4,0);
+  vdSteerWheelDistMM.assign(4,0);
+  vdSteerWheelAngRad.assign(4,0);
+
   vdSteerPosWheelXMM.assign(4,0);
   vdSteerPosWheelYMM.assign(4,0);
   vdSteerWheelDistMM.assign(4,0);
@@ -2975,6 +2996,9 @@ int main(int argc, char** argv)
   vdWheelDistMM.assign(4,0);
   vdWheelAngRad.assign(4,0);
   vdWheelNeutralPos.assign(4,0);
+
+myfile.open("Robot_drive_torque.txt");
+myfile1.open("Robot_drive_velocity.txt");
 
   //loading all the required params from yaml file
   if(!(loadingParams(NK1.n) == 0))
@@ -3066,6 +3090,10 @@ int main(int argc, char** argv)
   dCmdRateSec,  dSpring,  dDamp,  dVirtualMass,  dDPhiMax,  dDDPhiMax,  dMaxDriveRadS,  dMaxSteerRadS,
   vdSteerPosWheelXMM, vdSteerPosWheelYMM, vdWheelNeutralPos);
   int size = 0;
+  std::ofstream myfile2;
+  std::ofstream myfile3;
+  myfile2.open ("robot_individual_motor.txt");
+  myfile3.open("robot_individual_velocity.txt");
 
    while (ros::ok())
    {  
@@ -3390,11 +3418,21 @@ int main(int argc, char** argv)
           ROS_INFO_ONCE("Running"); 
           NK1.JointStatesMeasure();
           NK1.JointTorqueMeasure();
+          DM1.getGearTor(0,&dTorqueWheel1[0]);
+          DM2.getGearTor(0,&dTorqueWheel2[0]);
+          DM3.getGearTor(0,&dTorqueWheel3[0]);
+          DM4.getGearTor(0,&dTorqueWheel4[0]);
+          DM1.getGearPosAndVel(0,&vdPosGearRad[0], &vdVelGearRadS[0]);
+          DM2.getGearPosAndVel(0,&vdPosGearRad1[0], &vdVelGearRadS1[0]);
+          DM3.getGearPosAndVel(0,&vdPosGearRad2[0], &vdVelGearRadS2[0]);
+          DM4.getGearPosAndVel(0,&vdPosGearRad3[0], &vdVelGearRadS3[0]);
+
           DM1.recMessages(); 
           DM2.recMessages();
           DM3.recMessages();
           DM4.recMessages(); 
-
+          myfile2 << ros::Time::now()<<","<<dTorqueWheel1[0]<<dTorqueWheel1[0]<<dTorqueWheel1[0]<<dTorqueWheel1[0]<<"\n";
+          myfile3 << ros::Time::now()<<","<<vdVelGearRadS[0]<<vdVelGearRadS1[0]<<vdVelGearRadS2[0]<<vdVelGearRadS3[0]<<"\n";
           iFST_Running++;
         }
         

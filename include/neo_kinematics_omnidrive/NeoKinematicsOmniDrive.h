@@ -21,6 +21,7 @@
 #include <neo_kinematics_omnidrive/SocketCan.h>
 #include <neo_kinematics_omnidrive/CanMesg.h>
 #include "std_msgs/Float64.h"
+#include <fstream>
 
 
 
@@ -156,7 +157,15 @@ std::vector<double> vdWheelNeutralPos;
 
 // Flag for not running the state machine after homing
 int iFST_Running = 0;
-
+std::ofstream myfile;
+std::ofstream myfile1;
+// myfile.open ("steer_motor.txt");
+// myfile1.open("steer_velocity.txt");
+// myfile.open ("drive_motor.txt");
+// myfile1.open("drive_velocity.txt");
+// high_resolution_clock::time_point t1 = high_resolution_clock::now(); //Start timer
+// myfile.open("Robot_drive_torque.txt");
+// myfile1.open("Robot_drive_velocity.txt");
 
 
 class NeoKinematicsOmniDrive
