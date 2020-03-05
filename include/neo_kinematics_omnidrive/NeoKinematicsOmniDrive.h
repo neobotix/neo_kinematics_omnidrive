@@ -157,15 +157,6 @@ std::vector<double> vdWheelNeutralPos;
 
 // Flag for not running the state machine after homing
 int iFST_Running = 0;
-std::ofstream myfile;
-std::ofstream myfile1;
-// myfile.open ("steer_motor.txt");
-// myfile1.open("steer_velocity.txt");
-// myfile.open ("drive_motor.txt");
-// myfile1.open("drive_velocity.txt");
-// high_resolution_clock::time_point t1 = high_resolution_clock::now(); //Start timer
-// myfile.open("Robot_drive_torque.txt");
-// myfile1.open("Robot_drive_velocity.txt");
 
 
 class NeoKinematicsOmniDrive
@@ -217,29 +208,27 @@ class NeoKinematicsOmniDrive
 		// Publishers
 		timer_ctrl_step_ = n.createTimer(ros::Duration(0.02), &NeoKinematicsOmniDrive::timerCallbackCtrlStep, this);
 
-
 		pubJointStates = n.advertise<sensor_msgs::JointState>("/joint_states", 100);
 
 		pubJointControllerStates =  n.advertise<control_msgs::JointTrajectoryControllerState>("/controller_state", 1);
 
+		pub_Torque = n.advertise<std_msgs::Float64>("measured_torque", 1);
 
-	// // 	// Navigation - Odometry 
+		// Navigation - Odometry 
 		pub_Odometry = n.advertise<nav_msgs::Odometry>("/odometry", 1);
 
-	// // Subscribers
+		// Subscribers
 		sub_JointStateCmd = n.subscribe("/joint_command", 1, &NeoKinematicsOmniDrive::topicCBJointCommand, this);
 
-		// // Recieves the joint states. Used for inverse kinematics calculation.
+		// Recieves the joint states. Used for inverse kinematics calculation.
 		sub_Joint_States = n.subscribe("/controller_state", 1, &NeoKinematicsOmniDrive::topicCBJointStates, this); 
 
-
-		// 		// Joint trajectory controller allows us to control a joint by it's position, velocity or effort. 
+		// Joint trajectory controller allows us to control a joint by it's position, velocity or effort. 
 		pub_Joint_controller =  n.advertise<control_msgs::JointTrajectoryControllerState> ("/joint_command", 1);
 
 		// Subscribers for the user's command velocity, that the robot need to process.
 		sub_Commanded_Twist = n.subscribe("/cmd_vel", 1, &NeoKinematicsOmniDrive::topicCBTwistCmd, this); 
 
-		pub_Torque = n.advertise<std_msgs::Float64>("measured_torque", 1);
 
 		}
 

@@ -169,11 +169,17 @@ void getGearPosAndVel(double *pdPositonGearMeasInRad, double *pdVelGearMeasInRad
  */
 void getGearVel(double *pdVelGearMeasInRadS);
 
+/**
+ *get gear torques
+ *@param dVelGearMeasInRadS : gear velocity measurement in rad/s
+ */
 void getGearTor(double *pdTorGear);
 
+/**
+ *set gear torques
+ *@param dVelGearMeasInRadS : gear velocity measurement in rad/s
+ */
 void setGearTor(double dTorqueNm);
-
-bool get_limitswitch_state();
 
 /**
  *sets the drive parameters by passing objects 

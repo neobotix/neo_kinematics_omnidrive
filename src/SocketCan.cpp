@@ -1,4 +1,3 @@
-
 #include "ros/ros.h"
 #include <neo_kinematics_omnidrive/SocketCan.h>
 
@@ -71,10 +70,6 @@ bool SocketCan::receiveMsg(CanMesg* sCMsg)
     iNoBytes = read(iSocket, &frame, sizeof(struct can_frame));
     sCMsg->m_iId =frame.can_id;
     sCMsg->set(frame.data[0], frame.data[1], frame.data[2], frame.data[3],frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
-    /*ROS_INFO("can_id: %X data length: %d data: ", frame.can_id,frame.can_dlc);
-
-    for (int i = 0; i < frame.can_dlc; i++)
-        ROS_INFO("%02X ", frame.data[i]);*/
     bRet=true;
   }
 

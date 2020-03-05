@@ -1999,13 +1999,13 @@ int loadingParams(const ros::NodeHandle &n)
   }  
   //DrivePrms
   
-  if (n.hasParam("DrivePrms/MaxDriveRate"))
+  if (n.hasParam("DrivePrms/MaxDriverate"))
         {
-          n.getParam("DrivePrms/MaxDriveRate", dMaxDriveRadS);
+          n.getParam("DrivePrms/MaxDriverate", dMaxDriveRadS);
         }
   else
   {
-    ROS_ERROR("FAILED to load MaxDriveRate parameter from parameter server");
+    ROS_ERROR("FAILED to load MaxDriverate parameter from parameter server");
     return 1;    
   }  
   if (n.hasParam("DrivePrms/MaxSteerRate"))
@@ -2121,16 +2121,16 @@ int loadingParams(const ros::NodeHandle &n)
 
 
 
-int driveErrors(int iErrorNum)
+int driveerrors(int ierrorNum)
 {
-  if((iErrorNum==m_DriveError.iOverHeating) || (iErrorNum==m_DriveError.iOverVoltage) || (iErrorNum==m_DriveError.iUnderVoltage) || (iErrorNum==m_DriveError.iMotorOff) || 
-     (iErrorNum==m_DriveError.iCurrentLimintOn) || (iErrorNum==m_DriveError.iFeedbackLoss) || (iErrorNum==m_DriveError.iPeakCurrentExced) || (iErrorNum==m_DriveError.iSpeedTrack) ||
-     (iErrorNum==m_DriveError.iPositionTrack) || (iErrorNum==m_DriveError.iSpeedLimit) || (iErrorNum==m_DriveError.iMotorStuck) )
+  if((ierrorNum==m_DriveError.iOverHeating) || (ierrorNum==m_DriveError.iOverVoltage) || (ierrorNum==m_DriveError.iUnderVoltage) || (ierrorNum==m_DriveError.iMotorOff) || 
+     (ierrorNum==m_DriveError.iCurrentLimintOn) || (ierrorNum==m_DriveError.iFeedbackLoss) || (ierrorNum==m_DriveError.iPeakCurrentExced) || (ierrorNum==m_DriveError.iSpeedTrack) ||
+     (ierrorNum==m_DriveError.iPositionTrack) || (ierrorNum==m_DriveError.iSpeedLimit) || (ierrorNum==m_DriveError.iMotorStuck) )
   {
     return 1;
   }
 
-  else if(iErrorNum==m_DriveError.iShortCircuit)
+  else if(ierrorNum==m_DriveError.iShortCircuit)
   {
     return -1;
   }
@@ -2139,84 +2139,84 @@ int driveErrors(int iErrorNum)
 }
 
 
-void displayErrors(int iErrorNum)
+void displayerrors(int ierrorNum)
 {
-  if(iErrorNum==m_DriveError.iInitPosNotSet)
+  if(ierrorNum==m_DriveError.iInitPosNotSet)
   {
     ROS_ERROR("Intitial positon is not set");
   }
 
-  else if(iErrorNum==m_DriveError.iStatusReqFail)
+  else if(ierrorNum==m_DriveError.iStatusReqFail)
   {
     ROS_ERROR("No answer on status request");
   }
 
 
-  else if(iErrorNum==m_DriveError.iOverHeating)
+  else if(ierrorNum==m_DriveError.iOverHeating)
   {
     ROS_ERROR("Over heating");
     ROS_INFO("The environment is too hot, or lacks heat removal or there may be a large thermal resistance between the drive and its mounting.");
   }
 
-  else if(iErrorNum==m_DriveError.iShortCircuit)
+  else if(ierrorNum==m_DriveError.iShortCircuit)
   {
     ROS_ERROR("Drive error short cirucit");
     ROS_INFO("The motor or its wiring may be defective.");
   }
 
-  else if(iErrorNum==m_DriveError.iOverVoltage)
+  else if(ierrorNum==m_DriveError.iOverVoltage)
   {
     ROS_ERROR("Drive error over voltage");
     ROS_INFO("The power supply voltage is too large, or the servo drive did not succeed in absorbing the kinetic energy while braking a load. A shunt resistor may be needed.");
   }
 
-  else if(iErrorNum==m_DriveError.iUnderVoltage)
+  else if(ierrorNum==m_DriveError.iUnderVoltage)
   {
     ROS_ERROR("Drive error under voltage");
     ROS_INFO("The power supply is shut off or it has too high an impedance.");
   }
 
-  else if(iErrorNum==m_DriveError.iMotorOff)
+  else if(ierrorNum==m_DriveError.iMotorOff)
   {
     ROS_ERROR("Motor is still Off");
   }
 
-  else if(iErrorNum==m_DriveError.iCurrentLimintOn)
+  else if(ierrorNum==m_DriveError.iCurrentLimintOn)
   {
     ROS_ERROR("Motor current limit on");
   }
 
-  else if(iErrorNum==m_DriveError.iFeedbackLoss)
+  else if(ierrorNum==m_DriveError.iFeedbackLoss)
   {
     ROS_ERROR("feedback loss");
     ROS_INFO("No match between encoder and Hall location.Available in encoder + Hall feedback systems..");
   }
 
-  else if(iErrorNum==m_DriveError.iPeakCurrentExced)
+  else if(ierrorNum==m_DriveError.iPeakCurrentExced)
   {
     ROS_ERROR("Peak current excced");
     ROS_INFO("Possible reasons are drive malfunction or bad tuning of the current controller.");
   }
 
-  else if(iErrorNum==m_DriveError.iSpeedTrack)
+  else if(ierrorNum==m_DriveError.iSpeedTrack)
   {
     ROS_ERROR("Speed track error");
     ROS_INFO("Bad tuning of the speed controller (or)  Too tight a speed error tolerance (or) Inability of motor to accelerate to the required speed due to too low a line voltage or not a powerful enough motor");
   }
 
-  else if(iErrorNum==m_DriveError.iPositionTrack)
+  else if(ierrorNum==m_DriveError.iPositionTrack)
   {
     ROS_ERROR("position track error");
     ROS_INFO("Bad tuning of the position or speed controller (or) Too tight a position error tolerance (or) Abnormal motor load, or reaching a mechanical limit");
   }
 
-  else if(iErrorNum==m_DriveError.iSpeedLimit)
+  else if(ierrorNum==m_DriveError.iSpeedLimit)
   {
     ROS_ERROR("speed limit exceeded");
     ROS_INFO("speed has exceedded the limits");
   }
  
-  else if(iErrorNum==m_DriveError.iMotorStuck)
+  else if(ierrorNum==m_DriveError.iMotorStuck)
   {
     ROS_ERROR("motor stuck");
     ROS_INFO("A stuck motor is a motor that does not respond to the applied current command, due to failure of the motor, the drive system or the motion sensor.");
@@ -2237,6 +2237,7 @@ void displayErrors(int iErrorNum)
     DM1.setGearTor(msg->data);
   }
 
+// ToDo EMStop needs to be added as the part of the state machine.
 // void EmgCB(const neo_msgs::EmergencyStopState msg)
 // {
 //   if((bool)msg.emergency_button_stop || (bool)msg.scanner_stop == 1)
@@ -2259,8 +2260,11 @@ bool srvCallback_Homing(neo_kinematics_omnidrive::Homing::Request  &req, neo_kin
   
   return true;
 }
+
+// TODO: Change the naming of this function to correct the homing! 
 bool er(double no, double pos)
 {
+    // Function used for error correction after the wheels have triggered the homing switch. 
 
     bool homing = true;
     double dDeltaPhi = 0.0 - pos;
@@ -2278,13 +2282,21 @@ bool er(double no, double pos)
     double dVelCmd = 0.85 * dDeltaPhi;
 
     if(no == 1)
-    {DM1.setVelInRadS(1, dVelCmd);}
+      {
+        DM1.setVelInRadS(1, dVelCmd);
+      }
     else if(no == 2)
-    {DM2.setVelInRadS(1, dVelCmd);}
+      {
+        DM2.setVelInRadS(1, dVelCmd);
+      }
     else if(no == 3)
-    {DM3.setVelInRadS(1, dVelCmd);} 
+      {
+        DM3.setVelInRadS(1, dVelCmd);
+      } 
     else if(no == 4)
-    {DM4.setVelInRadS(1, dVelCmd);}
+      {
+        DM4.setVelInRadS(1, dVelCmd);
+      }
     return homing;
 }
 
@@ -2294,7 +2306,7 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
 {
   // init local variables
   int j, k;
-  bool bIsError;
+  bool bIserror;
   std::vector<double> vdAngGearRadW1, vdVelGearRadW1, vdEffortGearNMW1;
 
   std::vector<double> vdAngGearRadW2, vdVelGearRadW2, vdEffortGearNMW2;
@@ -2302,12 +2314,6 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
   std::vector<double> vdAngGearRadW3, vdVelGearRadW3, vdEffortGearNMW3;
 
   std::vector<double> vdAngGearRadW4, vdVelGearRadW4, vdEffortGearNMW4;
-
-
-  // set default values
-  // vdAngGearRadW.resize(8, 0);
-  // vdVelGearRadW.resize(8, 0);
-  // vdEffortGearNMW.resize(8, 0);
 
   vdAngGearRadW1.resize(2, 0);
   vdVelGearRadW1.resize(2, 0);
@@ -2343,7 +2349,7 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
   if(bIsIntialised == false)
   {
     // as long as system is not initialized
-    bIsError = false;
+    bIserror = false;
 
     j = 0;
     k = 0;
@@ -2387,25 +2393,6 @@ bool NeoKinematicsOmniDrive::JointStatesMeasure()
       NeoMath::PiNormalization(vdAngGearRadW3[1]);
       vdAngGearRadW4[1] += vdWheelNeutralPos[3];
       NeoMath::PiNormalization(vdAngGearRadW4[1]);
-
-        //   // if a steering motor was read -> correct for offset
-        //   if( i == 1 || i == 3 || i == 5 || i == 7) // ToDo: specify this via the config-files
-        // {
-        //   // correct for initial offset of steering angle (arbitrary homing position)
-        //   vdAngGearRad[i] += vdWheelNeutralPos[j];
-        //   NeoMath::PiNormalization(vdAngGearRad[i]);
-        //   j = j+1;
-        // }
-      
-
-
-    // set data to jointstate
-    // for(int i = 0; i<8; i++)
-    // {
-    //   jointstate.position[i] = vdAngGearRad[i];
-    //   jointstate.velocity[i] = vdVelGearRad[i];
-    //   jointstate.effort[i] = 0;
-    // }
 
     for(int i=0;i<=1;i++)
     {
@@ -2610,8 +2597,8 @@ void NeoKinematicsOmniDrive::topicCBJointCommand(const control_msgs::JointTrajec
               JointStateCmdM4.velocity[i] = -dMaxDriveRadS;
             }
           }
-          // if(JointStateCmdM2.velocity[1]!=0)          
-          // {std::cout<<"JC:"<<JointStateCmdM2.velocity[1]<<std::endl;}
+
+        // Sending the joint command to the wheels
 
         DM1.setVelInRadS(i,JointStateCmdM1.velocity[i]);
         DM2.setVelInRadS(i,JointStateCmdM2.velocity[i]);
@@ -2635,16 +2622,19 @@ void NeoKinematicsOmniDrive::topicCBJointStates(const control_msgs::JointTraject
   iJointNumberSize = msg->joint_names.size();
 
 // Drive joints
+
   vdDriveGearDltAngRad.assign(4, 0.0);
   vdDriveGearVelRadS.assign(4, 0.0);
   // vdDriveGearEffort.assign(iNumOfJoints, 0.0);
 
 // Steer joints
+
   vdSteerGearPosRad.assign(4, 0.0);
   vdSteerGearVelRadS.assign(4, 0.0);
-  // vdSteerGearEffort.assign(iNumOfJoints, 0.0);
-// std::cout<<"here";
 
+// vdSteerGearEffort.assign(iNumOfJoints, 0.0);
+
+// TODO: Change the names to the ones similar to the simulation
 // Assigning messages recieved to the respective drive joints and steer joints
   for(int i = 0; i < 8; i++)
   {
@@ -2875,7 +2865,7 @@ void NeoKinematicsOmniDrive::Update_Odom()
 
   // format data for compatibility with tf-package and standard odometry msg
   // generate quaternion for rotation
-  // NOTE: THERE MAY BE A BUG HERE. PLEASE VERIFY THIS CAREFULLY
+  // NOTE: THerE MAY BE A BUG HerE. PLEASE VerIFY THIS CAREFULLY
   tf2Quaternion.setRPY( fRoll, fPitch, dPos_Rad);
   tf2::convert(tf2Quaternion, odom_quat);
 ;
@@ -2919,8 +2909,8 @@ void NeoKinematicsOmniDrive::Update_Odom()
   odom_top.twist.twist.angular.y = 0.0;
   odom_top.twist.twist.angular.z = dVel_rad_cmd;
   for(int i = 0; i < 6; i++)
-  {odom_top.twist.covariance[6*i+i] = 0.1;}
-  myfile1 << ros::Time::now()<<","<<dVel_rad_cmd<<"\n";
+  {
+    odom_top.twist.covariance[6*i+i] = 0.1;}
   // publish odometry msg
   pub_Odometry.publish(odom_top);
 
@@ -2934,26 +2924,20 @@ void NeoKinematicsOmniDrive::JointTorqueMeasure()
   dTorqueWheel2.resize(2,0);
   dTorqueWheel3.resize(2,0);
   dTorqueWheel4.resize(2,0);
-  std_msgs::Float64 dTorqueRobot;
+  std_msgs::Float64 dTorquerobot;
 
   DM1.getGearTor(0,&dTorqueWheel1[0]);
   DM2.getGearTor(0,&dTorqueWheel2[0]);
   DM3.getGearTor(0,&dTorqueWheel3[0]);
   DM4.getGearTor(0,&dTorqueWheel4[0]);
 
-  dTorqueRobot.data = (abs(dTorqueWheel1[0]) + abs(dTorqueWheel2[0]) + abs(dTorqueWheel3[0]) + abs(dTorqueWheel4[0]))/4.0;
-  myfile << ros::Time::now()<<","<<dTorqueRobot.data<<"\n";
-
-
-
-  pub_Torque.publish(dTorqueRobot);
+  dTorquerobot.data = (abs(dTorqueWheel1[0]) + abs(dTorqueWheel2[0]) + abs(dTorqueWheel3[0]) + abs(dTorqueWheel4[0]))/4.0;
+  pub_Torque.publish(dTorquerobot);
 }
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "NeoKinOmnidrive");                    //initialize ros node  
-  SocketCan SC1;
-  CanMesg Msg;
   std::vector<double> dTorqueWheel1, dTorqueWheel2, dTorqueWheel3, dTorqueWheel4 ;
   dTorqueWheel1.resize(2,0);
   dTorqueWheel2.resize(2,0);
@@ -2965,7 +2949,7 @@ int main(int argc, char** argv)
   int iTimeElapsed,iTimeSleep, iTimeSleep1, iTimeSleep2;                                 //variable to store elapsed time
   std::chrono::steady_clock::time_point aStart,aStartTime, aStartTime1, t1, t2, t3, t4;     //aStart stores the start time for homing
   int iNumOfMotors=2;                                          //total no of motors
-  bool bDriveError;                                            //boolean variable that tells presence of drive error
+  bool bDriveerror;                                            //boolean variable that tells presence of drive error
   //creating a vectors to store positoin and velocity of steer and drive motors of DM1
   std::vector<double> vdPosGearRad,vdVelGearRadS, vdTorGear;
   vdPosGearRad.resize(2,0);
@@ -2973,14 +2957,20 @@ int main(int argc, char** argv)
   vdTorGear.resize(2,0);
 
   std::vector<double> vdPosGearRad1,vdVelGearRadS1;
+
   vdPosGearRad1.resize(2,0);
   vdVelGearRadS1.resize(2,0);
+
   std::vector<double> vdPosGearRad2,vdVelGearRadS2;
+
   vdPosGearRad2.resize(2,0);
   vdVelGearRadS2.resize(2,0);
+
   std::vector<double> vdPosGearRad3,vdVelGearRadS3;
+
   vdPosGearRad3.resize(2,0);
   vdVelGearRadS3.resize(2,0);
+
   vdSteerPosWheelXMM.assign(4,0);
   vdSteerPosWheelYMM.assign(4,0);
   vdSteerWheelDistMM.assign(4,0);
@@ -2997,20 +2987,18 @@ int main(int argc, char** argv)
   vdWheelAngRad.assign(4,0);
   vdWheelNeutralPos.assign(4,0);
 
-myfile.open("Robot_drive_torque.txt");
-myfile1.open("Robot_drive_velocity.txt");
 
   //loading all the required params from yaml file
   if(!(loadingParams(NK1.n) == 0))
   {
-    ROS_ERROR("Error occured while loading the params");
+    ROS_ERROR("error occured while loading the params");
     // return -1;
   }
  
    m_iDriveState=ST_DRIVE_NOT_INIT;
 
    //declaring variable to store ther return value of init funciton
-   int iErrorVal1,iErrorVal2,iErrorVal3,iErrorVal4;
+   int ierrorVal1,ierrorVal2,ierrorVal3,ierrorVal4;
 
 
    // starting the canopen network using network mangaement protocol
@@ -3018,7 +3006,7 @@ myfile1.open("Robot_drive_velocity.txt");
 
 
    //function which initializes the drive module and turns on motor
-   iErrorVal1= DM1.init(
+   ierrorVal1= DM1.init(
                        m_MotorSteer1.iTxPDO1,m_MotorSteer1.iTxPDO2,m_MotorSteer1.iRxPDO2,m_MotorSteer1.iTxSDO,m_MotorSteer1.iRxSDO,m_MotorSteer1.iEncIncrPerRevMot,
                        m_MotorSteer1.dVelMeasFrqHz, m_MotorSteer1.dBeltRatio, m_MotorSteer1.dGearRatio,  m_MotorSteer1.iSign,  m_MotorSteer1.dVelMaxEncIncrS,
                        m_MotorSteer1.dAccIncrS2,  m_MotorSteer1.dDecIncrS2 ,m_MotorSteer1.iEncOffsetIncr, m_MotorSteer1.bIsSteer, m_MotorSteer1.dCurrentToTorque,
@@ -3029,7 +3017,7 @@ myfile1.open("Robot_drive_velocity.txt");
                        m_MotorDrive1.dCurrMax,m_MotorDrive1.iHomingDigIn, m_MotorDrive1.iHomingTimeout,m_MotorDrive1.iModulo
                       );
 
-   iErrorVal2= DM2.init(
+   ierrorVal2= DM2.init(
                        m_MotorSteer2.iTxPDO1,m_MotorSteer2.iTxPDO2,m_MotorSteer2.iRxPDO2,m_MotorSteer2.iTxSDO,m_MotorSteer2.iRxSDO,m_MotorSteer2.iEncIncrPerRevMot,
                        m_MotorSteer2.dVelMeasFrqHz, m_MotorSteer2.dBeltRatio, m_MotorSteer2.dGearRatio,  m_MotorSteer2.iSign,  m_MotorSteer2.dVelMaxEncIncrS,
                        m_MotorSteer2.dAccIncrS2,  m_MotorSteer2.dDecIncrS2 ,m_MotorSteer2.iEncOffsetIncr, m_MotorSteer2.bIsSteer, m_MotorSteer2.dCurrentToTorque,
@@ -3040,7 +3028,7 @@ myfile1.open("Robot_drive_velocity.txt");
                        m_MotorDrive2.dCurrMax,m_MotorDrive2.iHomingDigIn, m_MotorDrive2.iHomingTimeout,m_MotorDrive2.iModulo
                       );
 
-   iErrorVal3= DM3.init(
+   ierrorVal3= DM3.init(
                        m_MotorSteer3.iTxPDO1,m_MotorSteer3.iTxPDO2,m_MotorSteer3.iRxPDO2,m_MotorSteer3.iTxSDO,m_MotorSteer3.iRxSDO,m_MotorSteer3.iEncIncrPerRevMot,
                        m_MotorSteer3.dVelMeasFrqHz, m_MotorSteer3.dBeltRatio, m_MotorSteer3.dGearRatio,  m_MotorSteer3.iSign,  m_MotorSteer3.dVelMaxEncIncrS,
                        m_MotorSteer3.dAccIncrS2,  m_MotorSteer3.dDecIncrS2 ,m_MotorSteer3.iEncOffsetIncr, m_MotorSteer3.bIsSteer, m_MotorSteer3.dCurrentToTorque,
@@ -3051,7 +3039,7 @@ myfile1.open("Robot_drive_velocity.txt");
                        m_MotorDrive3.dCurrMax,m_MotorDrive3.iHomingDigIn, m_MotorDrive3.iHomingTimeout,m_MotorDrive3.iModulo
                       );
 
-   iErrorVal4= DM4.init(
+   ierrorVal4= DM4.init(
                        m_MotorSteer4.iTxPDO1,m_MotorSteer4.iTxPDO2,m_MotorSteer4.iRxPDO2,m_MotorSteer4.iTxSDO,m_MotorSteer4.iRxSDO,m_MotorSteer4.iEncIncrPerRevMot,
                        m_MotorSteer4.dVelMeasFrqHz, m_MotorSteer4.dBeltRatio, m_MotorSteer4.dGearRatio,  m_MotorSteer4.iSign,  m_MotorSteer4.dVelMaxEncIncrS,
                        m_MotorSteer4.dAccIncrS2,  m_MotorSteer4.dDecIncrS2 ,m_MotorSteer4.iEncOffsetIncr, m_MotorSteer4.bIsSteer, m_MotorSteer4.dCurrentToTorque,
@@ -3063,11 +3051,11 @@ myfile1.open("Robot_drive_velocity.txt");
                       );
 
    // it displays if there is any error
-   displayErrors(iErrorVal1);
-   displayErrors(iErrorVal2);
-   displayErrors(iErrorVal3);
-   displayErrors(iErrorVal4);
-   if(iErrorVal1==0 && iErrorVal2==0 && iErrorVal3==0 && iErrorVal4==0)
+   displayerrors(ierrorVal1);
+   displayerrors(ierrorVal2);
+   displayerrors(ierrorVal3);
+   displayerrors(ierrorVal4);
+   if(ierrorVal1==0 && ierrorVal2==0 && ierrorVal3==0 && ierrorVal4==0)
    {
      m_iDriveState=ST_DRIVE_INIT;
    }
@@ -3098,29 +3086,13 @@ myfile1.open("Robot_drive_velocity.txt");
    while (ros::ok())
    {  
   
-  //     t1 = std::chrono::steady_clock::now();
-     // bool b = true;
-     //  DM1.startCommunication();
-     //  DM2.startCommunication();
-     //  DM3.startCommunication();
-     //  DM4.startCommunication();
-
-      // SC1.receiveMsg(&Msg);
-     //receiving the messages and  stores it in vector
-      // viRet= DM1.recMessages(); 
-      // viRet2= DM2.recMessages(); 
-      // viRet3= DM3.recMessages(); 
-      // viRet4= DM4.recMessages(); 
-
-
-      // std::cout<<size<<std::endl;
       for (int i = 0; i < viRet.size(); i++) 
       {
-        //checking if any error present in the received vector by passing vector to the driveErrors function
-        if((driveErrors(viRet[i])==1))
+        //checking if any error present in the received vector by passing vector to the driveerrors function
+        if((driveerrors(viRet[i])==1))
         {
-          //displayErrors function displays the error obtained
-          displayErrors(viRet[i]);
+          //displayerrors function displays the error obtained
+          displayerrors(viRet[i]);
           //storing our current state of drive in variable m_iStoreState
           m_iStoreState=m_iDriveState;
           //in case of errors present changing the state of drive to ST_DRIVE_ERROR
@@ -3130,9 +3102,9 @@ myfile1.open("Robot_drive_velocity.txt");
         }
         
         //checking if any error obtained in vector is critical
-        if((driveErrors(viRet[i])==-1))
+        if((driveerrors(viRet[i])==-1))
         {
-          displayErrors(viRet[i]);
+          displayerrors(viRet[i]);
 
           //in case of critical errors it exits the program
           return -1;
@@ -3146,16 +3118,16 @@ myfile1.open("Robot_drive_velocity.txt");
       {
         for (int i = 0; i < viRet.size(); i++) 
         {
-          //checking if any errors present in received vector by passing it through driveErrors function
-          if((driveErrors(viRet[i])==1))
+          //checking if any errors present in received vector by passing it through driveerrors function
+          if((driveerrors(viRet[i])==1))
           {
-            //in case if any error present changing the boolean value of bDriveError as true
-            bDriveError=true;
+            //in case if any error present changing the boolean value of bDriveerror as true
+            bDriveerror=true;
           }
 
         }
 
-        if(bDriveError!=true)
+        if(bDriveerror!=true)
         {
           //if no error present then going back to our previous state by retriving it from m_iStoreState variable
           m_iDriveState=m_iStoreState;
@@ -3220,7 +3192,6 @@ myfile1.open("Robot_drive_velocity.txt");
           else
           {
             flag++;
-            // std::cout<<flag<<std::endl;
             ROS_INFO_ONCE("Pre homing is not done - Debug");
 
           }
@@ -3246,11 +3217,7 @@ myfile1.open("Robot_drive_velocity.txt");
             DM1.configureHoming();
             DM2.configureHoming();
             DM3.configureHoming();
-            DM4.configureHoming();
-            // DM1.recMessages(); 
-            // DM2.recMessages();
-            // DM3.recMessages();
-            // DM4.recMessages(); 
+            DM4.configureHoming(); 
             m_iDriveState = ST_ARM_HOMING;
             aStartTime = std::chrono::steady_clock::now();
           }
@@ -3277,10 +3244,6 @@ myfile1.open("Robot_drive_velocity.txt");
             DM2.armHoming();
             DM3.armHoming();
             DM4.armHoming();
-            // DM1.recMessages(); 
-            // DM2.recMessages();
-            // DM3.recMessages();
-            // DM4.recMessages(); 
             m_iDriveState = ST_WAIT_FOR_HOMING;
           }
         }
@@ -3300,19 +3263,14 @@ myfile1.open("Robot_drive_velocity.txt");
         auto aEndTime = std::chrono::steady_clock::now();
         iTimeSleep = std::chrono::duration_cast<std::chrono::microseconds>( aEndTime - aStartTime1 ).count();
         // Waiting fot the homing to finish
-        // std::cout<<iTimeSleep<<std::endl;
         if(iTimeSleep>100000)
         {
-        while(m_iDriveState != ST_ERROR_CORRECTION)
+        while(m_iDriveState != -ST_ERROR_CORRECTION)
         {
         bool bhm_done = DM1.homingDone();
         bool bhm_done2 = DM2.homingDone();
         bool bhm_done3 = DM3.homingDone(); 
         bool bhm_done4 = DM4.homingDone(); 
-        // DM1.recMessages(); 
-        // DM2.recMessages();
-        // DM3.recMessages();
-        // DM4.recMessages(); 
 
         if(bhm_done == 1 )
           {
@@ -3335,27 +3293,19 @@ myfile1.open("Robot_drive_velocity.txt");
         if(status1*status2*status3*status4 == 1 )
           {
             ROS_INFO_ONCE("Homing signal recieved");
-            m_iDriveState = ST_ERROR_CORRECTION;
-          // m_iDriveState = ST_DRIVE_INIT;
+            m_iDriveState = -ST_ERROR_CORRECTION;
           }
         }
       }
 
       }
 
-      else if( m_iDriveState == ST_ERROR_CORRECTION)
+      else if( m_iDriveState == -ST_ERROR_CORRECTION)
       {
-        // auto aEndTime = std::chrono::steady_clock::now();
-        // iTimeSleep = std::chrono::duration_cast<std::chrono::microseconds>( aEndTime - aStartTime ).count();
-        // // Waiting fot the homing to finish
-        // if(iTimeSleep>2000000)
-
-        //Todo Need to change the sleep with a efficient time function.
-
-        // std::cout<<"S"
 
         while(m_iDriveState != ST_RUNNING)
-        {ROS_INFO_ONCE("Errors?");
+        {
+        ROS_INFO_ONCE("errors?");
         aStartTime1 = std::chrono::steady_clock::now();
         // std::cout<<"Here";
         
@@ -3386,12 +3336,10 @@ myfile1.open("Robot_drive_velocity.txt");
         usleep(20000);
 
 
-        // DM4.recMessages();
-
         if(homing*homing1*homing2*homing3 == 1)
-        // {
-        //   ROS_INFO_ONCE("Finished");
-        // }
+        {
+          ROS_INFO_ONCE("Finished");
+        }
         {m_iDriveState = ST_RUNNING;}
         }
 
@@ -3417,11 +3365,8 @@ myfile1.open("Robot_drive_velocity.txt");
         {
           ROS_INFO_ONCE("Running"); 
           NK1.JointStatesMeasure();
-          NK1.JointTorqueMeasure();
-          DM1.getGearTor(0,&dTorqueWheel1[0]);
-          DM2.getGearTor(0,&dTorqueWheel2[0]);
-          DM3.getGearTor(0,&dTorqueWheel3[0]);
-          DM4.getGearTor(0,&dTorqueWheel4[0]);
+          // NK1.JointTorqueMeasure(); //Torque functionality - use it if required
+
           DM1.getGearPosAndVel(0,&vdPosGearRad[0], &vdVelGearRadS[0]);
           DM2.getGearPosAndVel(0,&vdPosGearRad1[0], &vdVelGearRadS1[0]);
           DM3.getGearPosAndVel(0,&vdPosGearRad2[0], &vdVelGearRadS2[0]);
@@ -3431,15 +3376,9 @@ myfile1.open("Robot_drive_velocity.txt");
           DM2.recMessages();
           DM3.recMessages();
           DM4.recMessages(); 
-          myfile2 << ros::Time::now()<<","<<dTorqueWheel1[0]<<dTorqueWheel1[0]<<dTorqueWheel1[0]<<dTorqueWheel1[0]<<"\n";
-          myfile3 << ros::Time::now()<<","<<vdVelGearRadS[0]<<vdVelGearRadS1[0]<<vdVelGearRadS2[0]<<vdVelGearRadS3[0]<<"\n";
+
           iFST_Running++;
         }
-        
-
-        // if(iTimeSleep1>100)
-        // {std::cout<<iTimeSleep1<<std::endl;}
-
       }
       else if(m_iDriveState == ST_EMERGENCY)
       {
@@ -3453,33 +3392,8 @@ myfile1.open("Robot_drive_velocity.txt");
           ROS_WARN_ONCE("Waiting to be cleared");
         }
       }
-
-  //     // std::cout<<iTimeSleep<<std::endl;
-
-                 
-
-
-
-  //    t3 = std::chrono::steady_clock::now();
-
       ros::spinOnce();
       loop_rate.sleep();   
-
-
-  //   auto t4 = std::chrono::steady_clock::now();
-  //             // std::cout<<iTimeSleep1<<std::endl;
-
-  //   iTimeSleep2 = std::chrono::duration_cast<std::chrono::microseconds>( t4 - t3 ).count();
-  //   // std::cout<<iTimeSleep2<<std::endl;
-
-  //       if(iTimeSleep1+ iTimeSleep2>10000)
-  //       {
-
-  //         ROS_WARN("Loop exceeded limit");
-  //       }
-
     }
-
   return 0;
-
 }
