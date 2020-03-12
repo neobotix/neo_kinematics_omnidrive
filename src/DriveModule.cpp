@@ -6,8 +6,8 @@
 
 DriveModule::DriveModule()
 {
-  Steer=new ElmoMotorCtrl();    //heap declaration of object for ElmoMotorCtrl class
-  Drive=new ElmoMotorCtrl();    //heap declaration of object for ElmoMotorCtrl class
+  // Steer=new ElmoMotorCtrl();    //heap declaration of object for ElmoMotorCtrl class
+  // Drive=new ElmoMotorCtrl();    //heap declaration of object for ElmoMotorCtrl class
  
 }
 
@@ -19,7 +19,7 @@ DriveModule::~DriveModule()
 
 int DriveModule::sendNetStartCanOpen()
 { 
-  Drive->sendCanMessage(0, 2, 1);     //start network command brings the drive to operational stage               
+  Drive.sendCanMessage(0, 2, 1);     //start network command brings the drive to operational stage               
   return 0;
 }
 
@@ -87,26 +87,26 @@ int DriveModule::init(
 
 
   //setting the Drive motor canoopen params
-  Drive->setCanOpenParam(TxPDO1_WDrive,TxPDO2_WDrive,RxPDO2_WDrive,TxSDO_WDrive,RxSDO_WDrive);
+  Drive.setCanOpenParam(TxPDO1_WDrive,TxPDO2_WDrive,RxPDO2_WDrive,TxSDO_WDrive,RxSDO_WDrive);
 
   //setting the Steer motor params
-  Drive->settingDriveParams(m_driveParam);
+  Drive.settingDriveParams(m_driveParam);
 
   //setting the steer motor canopoen params
-  Steer->setCanOpenParam(TxPDO1_WSteer,TxPDO2_WSteer,RxPDO2_WSteer,TxSDO_WSteer,RxSDO_WSteer);
+  Steer.setCanOpenParam(TxPDO1_WSteer,TxPDO2_WSteer,RxPDO2_WSteer,TxSDO_WSteer,RxSDO_WSteer);
 
   //setting the steer motor params 
-  Steer->settingDriveParams(m_steerParam);
+  Steer.settingDriveParams(m_steerParam);
   
   
   //checking if there is any error with drive motor initialization so that program can terminate
-  if((iDriveRet = Drive->initMotorCtrl())>0)
+  if((iDriveRet = Drive.initMotorCtrl())>0)
   {
      return iDriveRet;
   }
 
   //checking if there is any error with Steer motor initialization so that program can terminate
-  if((iSteerRet = Steer->initMotorCtrl())>0)
+  if((iSteerRet = Steer.initMotorCtrl())>0)
   {
     return iSteerRet;
   }
@@ -116,7 +116,7 @@ int DriveModule::init(
   if(iDriveRet==0)
   {
 
-    if((iDriveMotorOn=Drive->turnOnMotor())>0)
+    if((iDriveMotorOn=Drive.turnOnMotor())>0)
     {
       return iDriveMotorOn;
     }  
@@ -125,21 +125,21 @@ int DriveModule::init(
   // turn on Steer motor only when Steer motor is initialized successufully
   if(iSteerRet==0)
   {
-    if((iSteerMotorOn=Steer->turnOnMotor())>0)
+    if((iSteerMotorOn=Steer.turnOnMotor())>0)
     {
 
       return iSteerMotorOn;
     }  
   }
-  // Drive->turnOffMotor();
-  // Steer->turnOffMotor();
+  // Drive.turnOffMotor();
+  // Steer.turnOffMotor();
   return 0;
 }
 
 // bool DriveModule::SrvMotorSwitchCB(neo_kinematics_omnidrive::MotorSwitch::Request  &req, neo_kinematics_omnidrive::MotorSwitch::Response &res)
 // {
-//   Drive->turnOffMotor();
-//   Steer->turnOffMotor();
+//   Drive.turnOffMotor();
+//   Steer.turnOffMotor();
 //   res.Switch.data = false;
 //   return true;
 // }
@@ -149,7 +149,7 @@ int DriveModule::configureHoming()
   int iRet;      //return variable which stores configureHoming funciton return value
 
   //execute homing for the steer motor 
-  iRet=Steer->configureHoming();
+  iRet=Steer.configureHoming();
 
   return iRet;
 
@@ -159,7 +159,7 @@ void DriveModule::armHoming()
 {
 
   //execute homing for the steer motor 
-  Steer->armHoming();
+  Steer.armHoming();
 
 }
 
@@ -168,7 +168,7 @@ int DriveModule::homingDone()
   int iRet;      //return variable which stores executeHoming funciton return value
 
   //execute homing for the steer motor 
-  iRet=Steer->homingDone();
+  iRet=Steer.homingDone();
 
   return iRet;
 
@@ -180,11 +180,11 @@ void DriveModule::setVelInRadS(int i, double dGearvelrads)
   //setting veloicty of motor in rads 
   if(i == 0)
 
-  {Drive->setVelInRadS(dGearvelrads);}
+  {Drive.setVelInRadS(dGearvelrads);}
 
   if(i == 1)
 
-  {Steer->setVelInRadS(dGearvelrads);}
+  {Steer.setVelInRadS(dGearvelrads);}
  
 }
 
@@ -192,8 +192,8 @@ void DriveModule::setVelInRadS(int i, double dGearvelrads)
 void DriveModule::stopMotion()
 {
   //call the sotp motion funciotn from ElmoMotorCtrl class
-  Drive->stopMotion();   
-  Steer->stopMotion();
+  Drive.stopMotion();   
+  Steer.stopMotion();
  
 }
 
@@ -206,13 +206,13 @@ void DriveModule::getGearPosAndVel(int i,double *pdPosGearRad, double *pdVelGear
   // for i=0, it gets pos and vel for Drive motor
   if(i==0) 
   {
-    Drive->getGearPosAndVel(pdPosGearRad, pdVelGearRadS);
+    Drive.getGearPosAndVel(pdPosGearRad, pdVelGearRadS);
   }
 
   // for i=1, it gets pos and vel for Steer motor
   if (i==1)
   {
-    Steer->getGearPosAndVel(pdPosGearRad, pdVelGearRadS);
+    Steer.getGearPosAndVel(pdPosGearRad, pdVelGearRadS);
   }
 }
 
@@ -224,13 +224,13 @@ void DriveModule::getGearVel(int i,double *pdVelGearRadS)
   // for i=0, it gets pos and vel for Drive motor
   if(i==0) 
   {
-    Drive->getGearVel(pdVelGearRadS);
+    Drive.getGearVel(pdVelGearRadS);
   }
 
   // for i=1, it gets pos and vel for Steer motor
   if (i==1)
   {
-    Steer->getGearVel(pdVelGearRadS);
+    Steer.getGearVel(pdVelGearRadS);
   }
 }
 
@@ -241,26 +241,26 @@ void DriveModule::getGearTor(int i,double *pdTorGear)
   // for i=0, it gets torque for Drive motor
   if(i==0) 
   {
-    Drive->getGearTor(pdTorGear);
+    Drive.getGearTor(pdTorGear);
   }
 
   // for i=1, it gets torque for Steer motor
   if (i==1)
   {
-    Steer->getGearTor(pdTorGear);
+    Steer.getGearTor(pdTorGear);
   }
 }
 
 bool DriveModule::TriggeredCondition()
 {
-  Steer->TriggeredCondition();
+  Steer.TriggeredCondition();
 }
 
 void DriveModule::setGearTor(double dTorqueNm)
 {
   std::cout<<"Here";
-  Drive->setGearTor(dTorqueNm);
-  // Steer->setGearTor(dGearvelrads);
+  Drive.setGearTor(dTorqueNm);
+  // Steer.setGearTor(dGearvelrads);
 }
 
 
@@ -268,10 +268,20 @@ std::vector <int> DriveModule::recMessages()
 {
   std::vector <int> viReturn;
   //evlauating the recevied messges
-  viReturn= Drive->evaluatingMessageReceived();
 
-  viReturn=Steer->evaluatingMessageReceived();
+  viReturn= Drive.evaluatingMessageReceived();
 
+  viReturn=Steer.evaluatingMessageReceived();
+  
+  // std::cout<<iTimeSleep1<<std::endl;
   return viReturn;
+
+}
+
+void  DriveModule::OpenSocket()
+{
+  Drive.OpenSocket();
+
+    // Steer.OpenSocket();
 
 }

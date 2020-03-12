@@ -1,5 +1,6 @@
 #ifndef DRIVEMODULE_INCLUDEDEF_H
 #define DRIVEMODULE_INCLUDEDEF_H
+#include <chrono>
 
 #include <neo_kinematics_omnidrive/CanMesg.h>
 #include <neo_kinematics_omnidrive/ElmoMotorCtrl.h>
@@ -83,6 +84,10 @@ void getGearTor(int i, double *pdTorGear);
 
 void setGearTor( double dTorqueNm);
 
+void OpenSocket();
+
+void startCommunication();
+
 // bool SrvMotorSwitchCB(neo_kinematics_omnidrive::MotorSwitch::Request  &req, neo_kinematics_omnidrive::MotorSwitch::Response &res);
 
 /*
@@ -139,12 +144,14 @@ int     Drive_iModulo;                       // steer modulo
 
 
 //declaring steer and drive as objects for ElmoMotorCtrl class
-ElmoMotorCtrl *Steer;
-ElmoMotorCtrl *Drive;
+ElmoMotorCtrl Steer;
+ElmoMotorCtrl Drive;
 
 //declaring steer and drive as objects for DriveParameters class
 DriveParameters m_steerParam;
 DriveParameters m_driveParam;
+int iTimeElapsed,iTimeSleep, iTimeSleep1, iTimeSleep2;
+std::chrono::steady_clock::time_point t1, t2;
 
 
 

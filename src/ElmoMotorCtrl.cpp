@@ -5,13 +5,14 @@
 #include <chrono>
 using namespace std::chrono;
 
+// ToDo: Timeouts need to be implemented ! 
 
 ElmoMotorCtrl::ElmoMotorCtrl()
 {
   m_dPositonGearMeasInRad=0;     //Gear positin measurement in radians
   m_dVelGearMeasInRadS=0;        //Gear velocity measurement in rad/s      
   m_iStatus=0;                   //variable to which stores the bit received value of status register command
-  m_sCanCtrl=new SocketCan();
+  // m_sCanCtrl=new SocketCan();
 }
 
 ElmoMotorCtrl::~ElmoMotorCtrl()
@@ -30,6 +31,12 @@ void ElmoMotorCtrl::setCanOpenParam( int iTxPDO1, int iTxPDO2, int iRxPDO2, int 
 }
 
 
+void  ElmoMotorCtrl::OpenSocket()
+{
+   
+    m_sCanCtrl.initSocket();
+}
+
 
 int ElmoMotorCtrl::initMotorCtrl()
 {
@@ -41,17 +48,14 @@ int ElmoMotorCtrl::initMotorCtrl()
   CanMesg Msg;                                          // object for can message  
 
   //turn of motor
-  setInterpreter(8, 'M', 'O', 0, 0);
+  // setInterpreter(8, 'M', 'O', 0, 0);
 
   setInterpreter(8, 'X', 'M', 2,m_DriveParameter.getModulo());
 
   setInterpreter(8, 'X', 'M', 1, -m_DriveParameter.getModulo());
 
-
-  //setting velocity as motion control( so as per manual following commands should be performed pg-77)
-  setInterpreter(8, 'M', 'O', 0, 0);
-
-  //switch to unit mode 2
+  //switch to unit mode 2 ! 
+  // Refer the ELMO software implementation manual for Torque mode! 
   setInterpreter(8, 'U', 'M', 0, 2);
   // switch to profile mode 1(if unit mode 2)
   setInterpreter(8, 'P', 'M', 0, 1);
@@ -72,7 +76,8 @@ int ElmoMotorCtrl::initMotorCtrl()
   do
   { 
     //recevies the messages   
-    m_sCanCtrl->receiveMsg(&Msg);
+    m_sCanCtrl.receiveMsg(&Msg);
+    // std::cout<<"eval \n";
     //checking whether initial positon is set
     if(Msg.getByte(0)=='P' && Msg.getByte(1)=='X')
     {
@@ -152,44 +157,16 @@ void ElmoMotorCtrl::armHoming()
 
 }
 
-// int ElmoMotorCtrl::homingDone()
-// {
-//   //status of homing
-//   bool bret = true;
-//   CanMesg Msg;
-//   m_bLimSwRight == false;
-//   setInterpreter(4, 'H', 'M', 1, 0);
-//   m_sCanCtrl->receiveMsg(&Msg);
-//   if( (Msg.getByte(0) == 'H') && (Msg.getByte(1) == 'M') )
-//     { 
-//       // status message (homing armed = 1 / disarmed = 0) is encoded in 5th byte
-//       if(Msg.getByte(4) == 0)
-//       {
-//         // if 0 received: elmo disarmed homing after receiving the defined event
-//         // std::cout << "Got Homing-Signal "  << std::endl;
-//         m_bLimSwRight = true;
-//         return 1;  
-//       } 
-//     }
-//   }
+
 bool ElmoMotorCtrl::TriggeredCondition()
 {
-  // CanMesg Msg;
-  // bool bRet;
-  
+  setInterpreter(4, 'I', 'P', 0, 16);
+  sendCanMessage(0x80, 0, 0); 
 
-  // Clear the buffer
-  // do
-  // {
-  //   bRet = m_sCanCtrl->receiveMsg(&Msg);
-  // }
-  // while(bRet == true);
-
-  // Interpreter set
-	// std::cout<<m_iDigIn<<std::endl;
-	setInterpreter(4, 'I', 'P', 0, 16);
-	evaluatingMessageReceived();
+  evaluatingMessageReceived();
   setInterpreter(4,'S','R',0,0);
+  sendCanMessage(0x80, 0, 0); 
+
   evaluatingMessageReceived();
   if( (m_iDigIn & (unsigned int)m_DriveParameter.getHomDigIn())== 0x0000 )
   { 
@@ -206,16 +183,6 @@ bool ElmoMotorCtrl::TriggeredCondition()
 
 
 
-// void ElmoMotorCtrl::armHoming()
-// {
-//   //arm homing
-//   double dHomeVelInRads=-1.0;               //velocity at which steer motor should run while homing
-
-//   //turning the motor 
-//   setVelInRadS(dHomeVelInRads);
-
-// }
-
 int ElmoMotorCtrl::homingDone()
 {
   //status of homing
@@ -230,7 +197,7 @@ int ElmoMotorCtrl::homingDone()
   // Clear the buffer
   do
   {
-    bRet = m_sCanCtrl->receiveMsg(&Msg);
+    bRet = m_sCanCtrl.receiveMsg(&Msg);
   }
   while(bRet == true);
 
@@ -238,8 +205,13 @@ int ElmoMotorCtrl::homingDone()
   // std::cout<<m_iDigIn<<std::endl;
 
  	setInterpreter(4, 'I', 'P', 0, 16);
-	evaluatingMessageReceived();
+    sendCanMessage(0x80, 0, 0); 
+
+	// evaluatingMessageReceived();
+
   setInterpreter(4,'S','R',0,0);
+    sendCanMessage(0x80, 0, 0); 
+
   evaluatingMessageReceived();
   if( (m_iDigIn & (unsigned int)m_DriveParameter.getHomDigIn())== 0x0000 )
   { 
@@ -261,7 +233,6 @@ int ElmoMotorCtrl::homingDone()
 		// setVelInRadS(0.0);
 		return false;
 	}
-  // std::cout<<bHomingTimeout;
 }
 
 
@@ -280,7 +251,7 @@ int ElmoMotorCtrl::turnOnMotor()
   //clearing the can buffer
   do
   {
-    bRet = m_sCanCtrl->receiveMsg(&Msg);
+    bRet = m_sCanCtrl.receiveMsg(&Msg);
   }
   while(bRet == true);
 
@@ -289,7 +260,7 @@ int ElmoMotorCtrl::turnOnMotor()
   iCount=0;
   do
   {
-    m_sCanCtrl->receiveMsg(&Msg);
+    m_sCanCtrl.receiveMsg(&Msg);
     if(Msg.getByte(0)=='S' && Msg.getByte(1)=='R')
     {
       iStatus=(Msg.getByte(4))|(Msg.getByte(5)<<8)|(Msg.getByte(6)<<16)|(Msg.getByte(7)<<24);
@@ -316,11 +287,6 @@ bool ElmoMotorCtrl::turnOffMotor()
   setInterpreter(8,'M','O',0,0);
   return bRet;
 }
-
-
-
-
-
 
 
 void ElmoMotorCtrl::setVelInRadS(double dGearvelrads)
@@ -360,14 +326,14 @@ void ElmoMotorCtrl::stopMotion()
   bool bRet=true;             //boolean stores the return value of receiveMsg funciton
   do
   {
-    bRet = m_sCanCtrl->receiveMsg(&Msg);
+    bRet = m_sCanCtrl.receiveMsg(&Msg);
   }
   while(bRet == true);
   //To stop the motion of motor
   setInterpreter(4,'S','T',0,0);
   
   //sending sync message to trigger devices for sending data
-  sendCanMessage(0x80, 0, 0);
+  // sendCanMessage(0x80, 0, 0);
 }
 
 int ElmoMotorCtrl::evaluateStatusRegister(int iStatus)
@@ -432,12 +398,15 @@ std::vector <int> ElmoMotorCtrl::evaluatingMessageReceived()
 
   //sending sync message to trigger devices for sending data
   std::vector <int> viReceivedMsg;
-  sendCanMessage(0x80, 0, 0); 
+  // sendCanMessage(0x80, 0, 0); 
 
-  do
+  // std::cout<<"eval-msg \n";
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+   do
   {   
 
-    bRet=m_sCanCtrl->receiveMsg(&Msg);
+    bRet=m_sCanCtrl.receiveMsg(&Msg);
     //----------------------------------------------------------------------------------------------------------------------------------
 
     if(bRet==true)
@@ -537,8 +506,6 @@ std::vector <int> ElmoMotorCtrl::evaluatingMessageReceived()
 
   }while(bRet==true);
 
-
-
   return viReceivedMsg;
 }
 
@@ -583,14 +550,8 @@ void ElmoMotorCtrl::setGearTor(double dTorqueNm)
 
   setInterpreter(8, 'T', 'C', 0, fMotCurr);
 
-  // setInterpreter(4,'B','G',0,0);
-
-  sendCanMessage(0x80, 0, 0);
-
-
-
   //sending request to evaluate status
-  // setInterpreter(4,'S','R',0,0);
+  setInterpreter(4,'S','R',0,0);
 }
 
 bool ElmoMotorCtrl::isBitSet(int iValue, int iBit)
@@ -627,14 +588,8 @@ void ElmoMotorCtrl::sendingSDODownload(int iIndex, int iSubindex, int iData)
   cMesg[7]=iData>>24;
 
   msg.set(cMesg[0],cMesg[1],cMesg[2],cMesg[3],cMesg[4],cMesg[5],cMesg[6],cMesg[7]);
-  m_sCanCtrl->transmitMsg(msg);
+  m_sCanCtrl.transmitMsg(msg);
 }
-
-
-
-
-
-
 
 void ElmoMotorCtrl::setInterpreter(int iDatalen,char cmdchar1,char cmdchar2,int iIndex,int iData )
 {
@@ -653,12 +608,9 @@ void ElmoMotorCtrl::setInterpreter(int iDatalen,char cmdchar1,char cmdchar2,int 
   cInt[3] = iData >> 24;
 
   Cmsg.set(cmdchar1,cmdchar2,cIndex[0],cIndex[1],cInt[0],cInt[1],cInt[2],cInt[3]);
-  m_sCanCtrl->transmitMsg(Cmsg);
+  m_sCanCtrl.transmitMsg(Cmsg);
 
 }
-
-
-
 
 void ElmoMotorCtrl::sendCanMessage(int iId, int iLen, unsigned char cByte)
 {
@@ -677,64 +629,5 @@ void ElmoMotorCtrl::sendCanMessage(int iId, int iLen, unsigned char cByte)
   cMesg[7]=0;
 
   msg.set(cMesg[0],cMesg[1],cMesg[2],cMesg[3],cMesg[4],cMesg[5],cMesg[6],cMesg[7]);
-  m_sCanCtrl->transmitMsg(msg);
+  m_sCanCtrl.transmitMsg(msg);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*bool ElmoMotorCtrl::Watchdog(bool bBegin)
-{
-  if(bBegin==true)
-  {
-
-    const int c_iHeartbeatTimeMS = 1000;
-    const int c_iNMTNodeID = 0x00;
-    m_Watchdog=true;
-
-
-    //heart beat consumer
-
-    sendingSDODownload(0x1016, 1, (c_iNMTNodeID << 16) | c_iHeartbeatTimeMS);
-
-    //error modes after failure : is 0=pre-operational, 1=no state change, 2=stopped
-    sendingSDODownload(0x1029, 1, 2);
-
-    //motor behaviour after heart beat failure : quick stopped
-    sendingSDODownload(0x6007, 0, 3);
-
-    //Object 0x2F21 = "Emergency Events" which cause an Emergency Message,,, Bit 3 is responsible for Heartbeart-Failure.--> Hex 0x08
-     sendingSDODownload(0x2F21, 0, 0x08);
-     //usleep(20000);
-  }
-
-  else
-  {
-    m_Watchdog=false;
-    //motor behaviour :no action
-    sendingSDODownload(0x6007, 0, 0);
-
-    //error state: no state change
-    sendingSDODownload(0x1029, 1, 1);
-
-    sendingSDODownload(0x2F21, 0, 0x00);
-    //usleep(24000);
-
-  }
-  return true;
-}*/
-
