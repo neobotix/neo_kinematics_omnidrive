@@ -73,10 +73,8 @@ public:
 			J.fill(0);
 			for(int i = 0; i < num_wheels; ++i)
 			{
-				const double wheel_pos_x = wheels[i].wheel_pos_x;
-				const double wheel_pos_y = wheels[i].wheel_pos_y;
-				const double wheel_pos_radius = ::hypot(wheel_pos_x, wheel_pos_y);		// wheel position in polar coords [m]
-				const double wheel_pos_angle = ::atan2(wheel_pos_y, wheel_pos_x);		// wheel position in polar coords [rad]
+				const double wheel_pos_radius = wheels[i].get_wheel_pos_radius();	// wheel position in polar coords [m]
+				const double wheel_pos_angle = wheels[i].get_wheel_pos_angle();		// wheel position in polar coords [rad]
 				const double wheel_angle = wheels[i].wheel_angle;
 				const double wheel_vel = wheels[i].wheel_vel;
 

@@ -41,16 +41,16 @@ int main()
 {
 	std::vector<OmniWheel> wheels(4);
 
-	wheels[0] = OmniWheel(0.4, 0.3);
-	wheels[1] = OmniWheel(-0.4, 0.3);
-	wheels[2] = OmniWheel(-0.4, -0.3);
-	wheels[3] = OmniWheel(0.4, -0.3);
+	wheels[0] = OmniWheel(0.4, 0.3, 0);
+	wheels[1] = OmniWheel(-0.4, 0.3, 0);
+	wheels[2] = OmniWheel(-0.4, -0.3, 0);
+	wheels[3] = OmniWheel(0.4, -0.3, 0);
 
 	VelocitySolver solver(4);
 
 	for(auto& wheel : wheels)
 	{
-		wheel.wheel_angle = 0;
+		wheel.set_wheel_angle(0);
 		wheel.wheel_vel = 0;
 	}
 
@@ -63,7 +63,7 @@ int main()
 
 	for(auto& wheel : wheels)
 	{
-		wheel.wheel_angle = 0;
+		wheel.set_wheel_angle(0);
 		wheel.wheel_vel = 1;
 	}
 
@@ -76,10 +76,10 @@ int main()
 
 	for(auto& wheel : wheels)
 	{
-		wheel.wheel_angle = 0;
+		wheel.set_wheel_angle(0);
 		wheel.wheel_vel = 1;
 	}
-	wheels[0].wheel_angle = 0.1;
+	wheels[0].set_wheel_angle(0.1);
 
 	solver.move_vel_x = 0;
 	solver.move_vel_y = 0;
@@ -90,7 +90,7 @@ int main()
 
 	for(auto& wheel : wheels)
 	{
-		wheel.wheel_angle = 0;
+		wheel.set_wheel_angle(0);
 		wheel.wheel_vel = 1;
 	}
 	wheels[0].wheel_vel = 0.9;
@@ -104,10 +104,10 @@ int main()
 
 	for(auto& wheel : wheels)
 	{
-		wheel.wheel_angle = 0;
+		wheel.set_wheel_angle(0);
 		wheel.wheel_vel = 1;
 	}
-	wheels[0].wheel_angle = 1.57;
+	wheels[0].set_wheel_angle(1.57);
 	wheels[0].wheel_vel = 1;
 
 	solver.move_vel_x = 0;
