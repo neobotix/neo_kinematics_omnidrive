@@ -39,7 +39,7 @@
 #include "MatrixX.h"
 
 #include <math.h>
-#include <iostream>
+#include <stdexcept>
 
 
 /*

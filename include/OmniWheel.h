@@ -47,6 +47,7 @@ public:
 	double center_pos_x = 0;			// steering axis location relative to base_link [m]
 	double center_pos_y = 0;			// steering axis location relative to base_link [m]
 	double lever_arm = 0;				// distance between steering axis and wheel center [m]
+	double home_angle = 0;				// wheel angle after homing [rad]
 
 	double wheel_pos_x = 0;				// wheel position relative to base_link [m]
 	double wheel_pos_y = 0;				// wheel position relative to base_link [m]
@@ -58,11 +59,12 @@ public:
 	{
 	}
 
-	OmniWheel(	double center_pos_x_, double center_pos_y_, double lever_arm_,
+	OmniWheel(	double center_pos_x_, double center_pos_y_, double lever_arm_, double home_angle_,
 				double wheel_angle_ = 0, double wheel_vel_ = 0)
 		:	center_pos_x(center_pos_x_),
 			center_pos_y(center_pos_y_),
-			lever_arm(lever_arm_)
+			lever_arm(lever_arm_),
+			home_angle(home_angle_)
 	{
 		set_wheel_angle(wheel_angle_);
 		wheel_vel = wheel_vel_;

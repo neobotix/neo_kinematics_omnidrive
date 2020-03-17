@@ -41,10 +41,10 @@ int main()
 {
 	std::vector<OmniWheel> wheels(4);
 
-	wheels[0] = OmniWheel(0.4, 0.3, 0);
-	wheels[1] = OmniWheel(-0.4, 0.3, 0);
-	wheels[2] = OmniWheel(-0.4, -0.3, 0);
-	wheels[3] = OmniWheel(0.4, -0.3, 0);
+	wheels[0] = OmniWheel(0.4, 0.3, 0, 0);
+	wheels[1] = OmniWheel(-0.4, 0.3, 0, 0);
+	wheels[2] = OmniWheel(-0.4, -0.3, 0, 0);
+	wheels[3] = OmniWheel(0.4, -0.3, 0, 0);
 
 	VelocitySolver solver(4);
 
