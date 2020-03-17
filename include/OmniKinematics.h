@@ -44,6 +44,10 @@
 #include <math.h>
 
 
+/*
+ * Computes desired wheel steering angles and velocities based on commanded
+ * platform velocity and yawrate.
+ */
 class OmniKinematics {
 public:
 	double zero_vel_threshold = 0.01;		// [m/s]
@@ -58,11 +62,8 @@ public:
 	}
 
 	/*
-	* Computes desired wheel angles and velocities based on commanded
+	* Computes desired wheel steering angles and velocities based on commanded
 	* platform velocity and yawrate.
-	*
-	* Takes into consideration current wheel angle and velocity, such as to
-	* choose the closer solution which doesn't require reversing the velocity.
 	*
 	* @return Vector of OmniWheels with wheel_angle and wheel_vel set to desired values.
 	*/
@@ -97,10 +98,11 @@ public:
 			const double vel_x = move_vel_x + tangential * -sin(wheel_pos_angle);		// tangential is 90 deg rotated (ie. in y direction at phi=0)
 			const double vel_y = move_vel_y + tangential * cos(wheel_pos_angle);
 
+			// convert desired x + y velocity to steering angle and drive velocity
 			double new_wheel_angle = ::atan2(vel_y, vel_x);
 			double new_wheel_vel = ::hypot(vel_x, vel_y);
 
-			// check if wheel should be driving or not
+			// check if wheel is currently driving or not
 			if(fabs(wheel.wheel_vel) > (is_driving[i] ? zero_vel_threshold : 2 * zero_vel_threshold))
 			{
 				// if wheel is driving choose the closest solution in terms of velocity direction
@@ -120,7 +122,7 @@ public:
 				const double center_pos_angle = ::atan2(wheel.center_pos_y, wheel.center_pos_x);
 				const double outer_wheel_angle = angles::normalize_angle(center_pos_angle - M_PI / 2);
 
-				// wheel is not driving, choose the solution which is closer to outer wheel angle
+				// if wheel is not driving choose the solution which is closer to outer wheel angle
 				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
 						> M_PI / 2 + (is_alternate[i] ? -1 : 1) * steering_hysteresis)
 				{
@@ -133,8 +135,9 @@ public:
 				is_driving[i] = false;
 			}
 
+			// store new values
 			OmniWheel new_wheel = wheel;
-			new_wheel.wheel_angle = new_wheel_angle;
+			new_wheel.set_wheel_angle(new_wheel_angle);
 			new_wheel.wheel_vel = new_wheel_vel;
 			result.push_back(new_wheel);
 		}

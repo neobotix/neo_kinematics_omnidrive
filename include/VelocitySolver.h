@@ -44,7 +44,7 @@
 
 /*
  * Computes platform velocity + yawrate based on a number of omni-drive wheels
- * and their given position, velocity and orientation.
+ * and their given position, velocity and steering orientation.
  *
  * See omni_equations.cpp for the source of equations below.
  */
@@ -68,9 +68,12 @@ public:
 		if(wheels.size() != num_wheels) {
 			throw std::logic_error("wheels.size() != num_wheels");
 		}
+
+		// make two iterations to get final R_norm
 		for(int iter = 0; iter < 2; ++iter)
 		{
-			J.fill(0);
+			J.fill(0);		// unset J values should be zero
+
 			for(int i = 0; i < num_wheels; ++i)
 			{
 				const double wheel_pos_radius = wheels[i].get_wheel_pos_radius();	// wheel position in polar coords [m]
@@ -88,6 +91,7 @@ public:
 			}
 			R_norm = R.norm();
 
+			// solve Gauss-Newton step
 			const Matrix<double, 3, 3> H(J.transpose() * J);
 			const Matrix<double, 3, 1> X = H.inverse() * Matrix<double, 3, 1>(J.transpose() * R);
 
