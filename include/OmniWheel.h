@@ -36,6 +36,7 @@
 #define INCLUDE_OMNI_WHEEL_H_
 
 #include <math.h>
+#include <string>
 
 
 /*
@@ -54,6 +55,9 @@ public:
 
 	double wheel_angle = 0;				// current wheel angle relative to base_link [rad]
 	double wheel_vel = 0;				// current wheel velocity between ground and wheel_link [m/s]
+
+	std::string drive_joint_name;
+	std::string steer_joint_name;
 
 	OmniWheel()
 	{
