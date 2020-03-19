@@ -79,9 +79,6 @@ public:
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/joint_name", m_wheels[i].steer_joint_name)) {
 				throw std::logic_error("joint_name param missing for steering motor" + std::to_string(i));
 			}
-			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/joint_name", m_wheels[i].steer_joint_name)) {
-				throw std::logic_error("joint_name param missing for steering motor" + std::to_string(i));
-			}
 			m_node_handle.getParam("steer" + std::to_string(i) + "/home_angle", m_wheels[i].home_angle);
 		}
 
@@ -93,7 +90,31 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(m_node_mutex);
 
-		// TODO
+		// compute new wheel angles and velocities
+		m_kinematics->compute(m_wheels, m_curr_cmd_vel.linear.x, m_curr_cmd_vel.linear.y, m_curr_cmd_vel.angular.z);
+
+		trajectory_msgs::JointTrajectory::Ptr joint_trajectory = boost::make_shared<trajectory_msgs::JointTrajectory>();
+		joint_trajectory->header.stamp = ros::Time::now();
+
+		trajectory_msgs::JointTrajectoryPoint point;
+
+		for(const auto& wheel : m_wheels)
+		{
+			joint_trajectory->joint_names.push_back(wheel.drive_joint_name);
+			joint_trajectory->joint_names.push_back(wheel.steer_joint_name);
+			{
+				const double drive_rot_vel = wheel.wheel_vel / m_wheel_radius;
+				point.positions.push_back(0);
+				point.velocities.push_back(drive_rot_vel);
+			}
+			{
+				point.positions.push_back(wheel.wheel_angle);
+				point.velocities.push_back(0);
+			}
+		}
+		joint_trajectory->points.push_back(point);
+
+		m_pub_joint_trajectory.publish(joint_trajectory);
 	}
 
 private:
@@ -145,7 +166,7 @@ private:
 		odometry->child_frame_id = "base_link";
 
 		// integrate odometry (using second order midpoint method)
-		if(m_curr_odom_time)
+		if(!m_curr_odom_time.is_zero())
 		{
 			const double dt = (joint_state.header.stamp - m_curr_odom_time).toSec();
 
@@ -169,7 +190,7 @@ private:
 			}
 			else
 			{
-				ROS_WARN("invalid joint state delta time: " << dt << " sec");
+				ROS_WARN_STREAM("invalid joint state delta time: " << dt << " sec");
 			}
 		}
 		m_curr_odom_time = joint_state.header.stamp;
@@ -277,7 +298,7 @@ int main(int argc, char** argv)
 			rate.sleep();
 		}
 	} catch(std::exception& ex) {
-		ROS_ERROR(ex.what());
+		ROS_ERROR_STREAM(ex.what());
 	}
 
 	return 0;
