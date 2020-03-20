@@ -265,14 +265,16 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(m_node_mutex);
 
+		ROS_INFO_STREAM("Initializing ...");
+
 		// wait for CAN socket to be available
 		m_wait_for_can_sock = true;
 
 		// reset states
 		for(auto& wheel : m_wheels)
 		{
-			wheel.drive.state = ST_PRE_INITIALIZED;
-			wheel.steer.state = ST_PRE_INITIALIZED;
+			set_motor_can_id(wheel.drive, wheel.drive.can_id);
+			set_motor_can_id(wheel.steer, wheel.steer.can_id);
 		}
 		is_all_homed = false;
 		is_homing_active = false;
@@ -333,6 +335,8 @@ public:
 		all_motors_on();
 
 		request_status_all();
+
+		ROS_INFO_STREAM("Initializing done.");
 	}
 
 	void shutdown()
@@ -582,14 +586,15 @@ private:
 		can_sync();
 	}
 
-	void motor_on(const motor_t& motor)
+	void motor_on(motor_t& motor)
 	{
 		canopen_set_int(motor, 'M', 'O', 0, 1);
 	}
 
-	void motor_off(const motor_t& motor)
+	void motor_off(motor_t& motor)
 	{
 		canopen_set_int(motor, 'M', 'O', 0, 0);
+		motor.state = ST_PRE_INITIALIZED;
 	}
 
 	void all_motors_on()
@@ -777,9 +782,10 @@ private:
 	 */
 	void can_sync()
 	{
-		if(::fsync(m_can_sock) != 0) {
+		/*if(::fflush(m_can_sock) != 0) {
 			throw std::runtime_error("fsync() failed with: " + std::string(strerror(errno)));
-		}
+		}*/
+		::usleep(1000);
 	}
 
 	/*
@@ -951,7 +957,7 @@ private:
 			else
 			{
 				if(motor.state != ST_OPERATION_DISABLED) {
-					ROS_INFO_STREAM(motor.joint_name << ": operation disabled");
+					ROS_WARN_STREAM(motor.joint_name << ": operation disabled");
 				}
 				motor.state = ST_OPERATION_DISABLED;
 			}
@@ -1035,7 +1041,7 @@ private:
 			}
 
 			// read a frame
-			can_frame frame = {};
+			::can_frame frame = {};
 			const auto res = ::read(m_can_sock, &frame, sizeof(frame));
 			if(res != sizeof(frame)) {
 				if(do_run) {
@@ -1142,8 +1148,10 @@ int main(int argc, char** argv)
 			if(ros::ok()) {
 				ROS_ERROR_STREAM(ex.what());
 				::usleep(1000 * 1000);
+				continue;
 			}
 		}
+		break;
 	}
 
 	while(ros::ok())
