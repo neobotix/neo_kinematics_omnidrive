@@ -61,12 +61,9 @@ public:
 			throw std::logic_error("missing wheel_lever_arm param");
 		}
 
-		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("odom", 1);
-		m_pub_joint_trajectory = m_node_handle.advertise<trajectory_msgs::JointTrajectory>("/drives/joint_trajectory", 1);
-
-		m_sub_cmd_vel = m_node_handle.subscribe("cmd_vel", 1, &NeoOmniDriveNode::cmd_vel_callback, this);
-		m_sub_joint_state = m_node_handle.subscribe("drives/joint_states", 1, &NeoOmniDriveNode::joint_state_callback, this);
-
+		if(m_num_wheels < 1) {
+			throw std::logic_error("invalid num_wheels param");
+		}
 		m_wheels.resize(m_num_wheels);
 
 		for(int i = 0; i < m_num_wheels; ++i)
@@ -79,8 +76,22 @@ public:
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/joint_name", m_wheels[i].steer_joint_name)) {
 				throw std::logic_error("joint_name param missing for steering motor" + std::to_string(i));
 			}
-			m_node_handle.getParam("steer" + std::to_string(i) + "/home_angle", m_wheels[i].home_angle);
+			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/center_pos_x", m_wheels[i].center_pos_x)) {
+				throw std::logic_error("center_pos_x param missing for steering motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/center_pos_y", m_wheels[i].center_pos_y)) {
+				throw std::logic_error("center_pos_y param missing for steering motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/home_angle", m_wheels[i].home_angle)) {
+				throw std::logic_error("home_angle param missing for steering motor" + std::to_string(i));
+			}
 		}
+
+		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("odom", 1);
+		m_pub_joint_trajectory = m_node_handle.advertise<trajectory_msgs::JointTrajectory>("/drives/joint_trajectory", 1);
+
+		m_sub_cmd_vel = m_node_handle.subscribe("cmd_vel", 1, &NeoOmniDriveNode::cmd_vel_callback, this);
+		m_sub_joint_state = m_node_handle.subscribe("drives/joint_states", 1, &NeoOmniDriveNode::joint_state_callback, this);
 
 		m_kinematics = std::make_shared<OmniKinematics>(m_num_wheels);
 		m_velocity_solver = std::make_shared<VelocitySolver>(m_num_wheels);

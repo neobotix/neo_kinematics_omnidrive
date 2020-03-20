@@ -27,51 +27,57 @@
 
 class NeoSocketCanNode {
 public:
-	enum motor_state_e {
+	enum motor_state_e
+	{
 		ST_PRE_INITIALIZED,
 		ST_OPERATION_ENABLED,
 		ST_OPERATION_DISABLED,
 		ST_MOTOR_FAILURE
 	};
 
-	struct motor_t {
-		std::string joint_name;
-		int32_t drive_id = -1;					// "CAN ID"
+	struct motor_t
+	{
+		std::string joint_name;					// ROS joint name
+		int32_t can_id = -1;					// motor "CAN ID"
 		int32_t rot_sign = 0;					// motor rotation direction
 		int32_t enc_ticks_per_rev = 0;			// encoder ticks per motor revolution
 		int32_t enc_home_offset = 0;			// encoder offset for true home position
-		int32_t enc_zero_value = 0;				// encoder value at angle of 0 rad
 		int32_t max_vel_enc_s = 1000000;		// max motor velocity in ticks/s (positive)
 		int32_t max_accel_enc_s = 1000000;		// max motor acceleration in ticks/s^2 (positive)
-		int32_t curr_enc_pos_inc = 0;			// current encoder position value in ticks
-		int32_t curr_enc_vel_inc_s = 0;			// current encoder velocity value in ticks/s
-		int32_t curr_status = 0;				// current status as received by SR msg
-		int32_t curr_motor_failure = 0;			// current motor failure status as received by MF msg
 		int32_t can_Tx_PDO1 = -1;
 		int32_t can_Tx_PDO2 = -1;
 		int32_t can_Rx_PDO2 = -1;
 		int32_t can_Tx_SDO = -1;
 		int32_t can_Rx_SDO = -1;
-		double gear_ratio = 0;
+		double gear_ratio = 0;					// gear ratio
+
 		motor_state_e state = ST_PRE_INITIALIZED;
-		ros::Time request_send_time;
-		ros::Time status_recv_time;
-		ros::Time last_update_time;
+		int32_t curr_enc_pos_inc = 0;			// current encoder position value in ticks
+		int32_t curr_enc_vel_inc_s = 0;			// current encoder velocity value in ticks/s
+		int32_t curr_status = 0;				// current status as received by SR msg
+		int32_t curr_motor_failure = 0;			// current motor failure status as received by MF msg
+		ros::Time request_send_time;			// time of last status update request
+		ros::Time status_recv_time;				// time of last status update received
+		ros::Time last_update_time;				// time of last sync update received
 		int homing_state = -1;					// current homing state (-1 = unknown, 0 = active, 1 = finished)
 	};
 
-	struct module_t {
+	struct module_t
+	{
 		motor_t drive;
 		motor_t steer;
+
 		int32_t home_dig_in = 0;				// digital input for homing switch
 		double home_angle = 0;					// home steering angle in rad
+
 		double curr_wheel_pos = 0;				// current wheel angle in rad
 		double curr_wheel_vel = 0;				// current wheel velocity in rad/s
 		double curr_steer_pos = 0;				// current steering angle in rad
 		double curr_steer_vel = 0;				// current steering velocity in rad
 	};
 
-	struct can_msg_t {
+	struct can_msg_t
+	{
 		int id = -1;
 		int length = 0;
 		char data[8] = {};
@@ -88,20 +94,42 @@ public:
 		m_node_handle.param("motor_timeout", m_motor_timeout, 1.);
 		m_node_handle.param("home_vel", m_home_vel, -1.);
 
-		m_pub_joint_state = m_node_handle.advertise<sensor_msgs::JointState>("drives/joint_states", 1);
-
-		m_sub_joint_trajectory = m_node_handle.subscribe("drives/joint_trajectory", 1, &NeoSocketCanNode::joint_trajectory_callback, this);
-		m_sub_emergency_stop = m_node_handle.subscribe("emergency_stop_state", 1, &NeoSocketCanNode::emergency_stop_callback, this);
-
+		if(m_num_wheels < 1) {
+			throw std::logic_error("invalid num_wheels param");
+		}
 		m_wheels.resize(m_num_wheels);
 
 		for(int i = 0; i < m_num_wheels; ++i)
 		{
+			if(!m_node_handle.getParam("drive" + std::to_string(i) + "/can_id", m_wheels[i].drive.can_id)) {
+				throw std::logic_error("can_id param missing for drive motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/can_id", m_wheels[i].steer.can_id)) {
+				throw std::logic_error("can_id param missing for steering motor" + std::to_string(i));
+			}
 			if(!m_node_handle.getParam("drive" + std::to_string(i) + "/joint_name", m_wheels[i].drive.joint_name)) {
 				throw std::logic_error("joint_name param missing for drive motor" + std::to_string(i));
 			}
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/joint_name", m_wheels[i].steer.joint_name)) {
 				throw std::logic_error("joint_name param missing for steering motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("drive" + std::to_string(i) + "/rot_sign", m_wheels[i].drive.rot_sign)) {
+				throw std::logic_error("rot_sign param missing for drive motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/rot_sign", m_wheels[i].steer.rot_sign)) {
+				throw std::logic_error("rot_sign param missing for steering motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("drive" + std::to_string(i) + "/gear_ratio", m_wheels[i].drive.gear_ratio)) {
+				throw std::logic_error("gear_ratio param missing for drive motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/gear_ratio", m_wheels[i].steer.gear_ratio)) {
+				throw std::logic_error("gear_ratio param missing for steering motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("drive" + std::to_string(i) + "/enc_ticks_per_rev", m_wheels[i].drive.enc_ticks_per_rev)) {
+				throw std::logic_error("enc_ticks_per_rev param missing for drive motor" + std::to_string(i));
+			}
+			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/enc_ticks_per_rev", m_wheels[i].steer.enc_ticks_per_rev)) {
+				throw std::logic_error("enc_ticks_per_rev param missing for steering motor" + std::to_string(i));
 			}
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/home_angle", m_wheels[i].home_angle)) {
 				throw std::logic_error("home_angle param missing for steering motor" + std::to_string(i));
@@ -109,7 +137,15 @@ public:
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/home_dig_in", m_wheels[i].home_dig_in)) {
 				throw std::logic_error("home_dig_in param missing for steering motor" + std::to_string(i));
 			}
+			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/enc_home_offset", m_wheels[i].steer.enc_home_offset)) {
+				throw std::logic_error("enc_home_offset param missing for steering motor" + std::to_string(i));
+			}
 		}
+
+		m_pub_joint_state = m_node_handle.advertise<sensor_msgs::JointState>("drives/joint_states", 1);
+
+		m_sub_joint_trajectory = m_node_handle.subscribe("drives/joint_trajectory", 1, &NeoSocketCanNode::joint_trajectory_callback, this);
+		m_sub_emergency_stop = m_node_handle.subscribe("emergency_stop_state", 1, &NeoSocketCanNode::emergency_stop_callback, this);
 
 		m_can_thread = std::thread(&NeoSocketCanNode::receive_loop, this);
 	}
@@ -229,6 +265,10 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(m_node_mutex);
 
+		// wait for CAN socket to be available
+		m_wait_for_can_sock = true;
+
+		// reset states
 		for(auto& wheel : m_wheels)
 		{
 			wheel.drive.state = ST_PRE_INITIALIZED;
@@ -298,6 +338,9 @@ public:
 	void shutdown()
 	{
 		std::lock_guard<std::mutex> lock(m_node_mutex);
+
+		// disable waiting for CAN socket, since we are shutting down
+		m_wait_for_can_sock = false;
 
 		try {
 			stop_motion();
@@ -476,6 +519,17 @@ private:
 		is_all_homed = true;
 		is_homing_active = false;
 		is_steer_reset_active = true;
+	}
+
+	void set_motor_can_id(motor_t& motor, int id)
+	{
+		motor.can_id = id;
+		motor.can_Tx_PDO1 = id + 0x180;
+		// motor.can_Rx_PDO1 = id + 0x200;
+		motor.can_Tx_PDO2 = id + 0x280;
+		motor.can_Rx_PDO2 = id + 0x300;
+		motor.can_Tx_SDO = id + 0x580;
+		motor.can_Rx_SDO = id + 0x600;
 	}
 
 	void configure_PDO_mapping(const motor_t& motor)
@@ -933,7 +987,7 @@ private:
 	{
 		bool is_error = false;
 
-		while(do_run)
+		while(do_run && ros::ok())
 		{
 			if(is_error || m_can_sock < 0)
 			{
@@ -971,7 +1025,8 @@ private:
 				}
 				catch(const std::exception& ex)
 				{
-					ROS_WARN_STREAM(ex.what() << " (" << ::strerror(errno) << ")");
+					ROS_WARN_STREAM("Failed to open CAN interface '" << m_can_iface << "': "
+							<< ex.what() << " (" << ::strerror(errno) << ")");
 					is_error = true;
 					continue;
 				}
@@ -1020,6 +1075,8 @@ private:
 				::close(m_can_sock);
 				m_can_sock = -1;
 			}
+			do_run = false;							// tell node that we are done
+			m_can_condition.notify_all();			// notify that socket is closed
 		}
 	}
 
