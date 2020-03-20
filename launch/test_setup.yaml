@@ -1,0 +1,82 @@
+
+num_wheels: 4
+wheel_radius: 0.088
+wheel_lever_arm: 0.045
+
+can_iface: /dev/pcan32
+motor_timeout: 1.0
+home_vel: -1.0
+broadcast_tf: true
+
+drive0:
+  can_id: 2
+  joint_name: fl_caster_r_wheel_joint
+  rot_sign: -1
+  gear_ratio: 30
+  enc_ticks_per_rev: 10000
+steer0:
+  can_id: 1
+  joint_name: fl_caster_rotation_joint
+  center_pos_x: 0.240
+  center_pos_y: 0.190
+  rot_sign: 1
+  gear_ratio: 19
+  enc_ticks_per_rev: 10000
+  home_angle: 180.0
+  home_dig_in: 9
+  enc_home_offset: 5562
+
+drive1:
+  can_id: 4
+  joint_name: bl_caster_r_wheel_joint
+  rot_sign: 1
+  gear_ratio: 30
+  enc_ticks_per_rev: 10000
+steer1:
+  can_id: 3
+  joint_name: bl_caster_rotation_joint
+  center_pos_x: -0.240
+  center_pos_y: 0.190
+  rot_sign: -1
+  gear_ratio: 19
+  enc_ticks_per_rev: 10000
+  home_angle: 180.0
+  home_dig_in: 9
+  enc_home_offset: -5684
+
+drive2:
+  can_id: 6
+  joint_name: br_caster_r_wheel_joint
+  rot_sign: -1
+  gear_ratio: 30
+  enc_ticks_per_rev: 10000
+steer2:
+  can_id: 5
+  joint_name: br_caster_rotation_joint
+  center_pos_x: -0.240
+  center_pos_y: -0.190
+  rot_sign: 1
+  gear_ratio: 19
+  enc_ticks_per_rev: 10000
+  home_angle: 0.0
+  home_dig_in: 9
+  enc_home_offset: 5758
+
+drive3:
+  can_id: 8
+  joint_name: fr_caster_r_wheel_joint
+  rot_sign: 1
+  gear_ratio: 30
+  enc_ticks_per_rev: 10000
+steer3:
+  can_id: 7
+  joint_name: fr_caster_rotation_joint
+  center_pos_x: 0.240
+  center_pos_y: -0.190
+  rot_sign: -1
+  gear_ratio: 19
+  enc_ticks_per_rev: 10000
+  home_angle: 0.0
+  home_dig_in: 9
+  enc_home_offset: -5441
+
