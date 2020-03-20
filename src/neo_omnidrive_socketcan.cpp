@@ -247,7 +247,7 @@ public:
 			{
 				const double future_steer_pos = wheel.curr_steer_pos + wheel.curr_steer_vel * m_steer_lookahead;
 				const double delta_rad = angles::shortest_angular_distance(wheel.target_steer_pos, future_steer_pos);
-				const double control_vel = delta_rad * m_steer_gain;
+				const double control_vel = -1 * delta_rad * m_steer_gain;
 				motor_set_vel(wheel.steer, control_vel);
 			}
 			can_sync();
@@ -364,6 +364,7 @@ public:
 
 		try {
 			stop_motion();
+			can_sync();
 			all_motors_off();
 			can_sync();
 		}
@@ -887,8 +888,11 @@ private:
 		if(offset < 0 || offset > 4) {
 			throw std::logic_error("invalid offset");
 		}
-		return (int32_t(msg.data[offset + 3]) << 24) | (int32_t(msg.data[offset + 2]) << 16)
-				| (int32_t(msg.data[offset + 1]) << 8) | int32_t(msg.data[offset + 0]);
+		int32_t value = 0;
+		::memcpy(&value, msg.data + offset, 4);
+		return value;
+//		return ((msg.data[offset + 3]) << 24) | ((msg.data[offset + 2]) << 16)
+//				| ((msg.data[offset + 1]) << 8) | (msg.data[offset + 0]);
 	}
 
 	void handle_PDO1(motor_t& motor, const can_msg_t& msg)
