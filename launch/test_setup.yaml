@@ -1,9 +1,10 @@
 
+update_rate: 10
 num_wheels: 4
 wheel_radius: 0.088
 wheel_lever_arm: 0.045
 
-can_iface: /dev/pcan32
+can_iface: can0
 motor_timeout: 1.0
 home_vel: -1.0
 broadcast_tf: true
@@ -24,7 +25,7 @@ steer0:
   enc_ticks_per_rev: 10000
   home_angle: 180.0
   home_dig_in: 9
-  enc_home_offset: 5562
+  enc_home_offset: 5433
 
 drive1:
   can_id: 4
@@ -42,7 +43,7 @@ steer1:
   enc_ticks_per_rev: 10000
   home_angle: 180.0
   home_dig_in: 9
-  enc_home_offset: -5684
+  enc_home_offset: -6296
 
 drive2:
   can_id: 6
@@ -60,7 +61,7 @@ steer2:
   enc_ticks_per_rev: 10000
   home_angle: 0.0
   home_dig_in: 9
-  enc_home_offset: 5758
+  enc_home_offset: 5641
 
 drive3:
   can_id: 8
@@ -78,5 +79,5 @@ steer3:
   enc_ticks_per_rev: 10000
   home_angle: 0.0
   home_dig_in: 9
-  enc_home_offset: -5441
+  enc_home_offset: -6186
 
