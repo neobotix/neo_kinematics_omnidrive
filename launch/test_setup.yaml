@@ -1,8 +1,10 @@
 
-update_rate: 10
 num_wheels: 4
+update_rate: 50
 wheel_radius: 0.088
 wheel_lever_arm: 0.045
+steer_gain: 1.0
+steer_lookahead: 0.1
 
 can_iface: can0
 motor_timeout: 1.0

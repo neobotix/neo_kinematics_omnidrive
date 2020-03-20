@@ -70,10 +70,11 @@ public:
 		int32_t home_dig_in = 0;				// digital input for homing switch
 		double home_angle = 0;					// home steering angle in rad
 
+		double target_steer_pos = 0;			// current steering target angle in rad
 		double curr_wheel_pos = 0;				// current wheel angle in rad
 		double curr_wheel_vel = 0;				// current wheel velocity in rad/s
 		double curr_steer_pos = 0;				// current steering angle in rad
-		double curr_steer_vel = 0;				// current steering velocity in rad
+		double curr_steer_vel = 0;				// current steering velocity in rad/s
 	};
 
 	struct can_msg_t
@@ -93,6 +94,8 @@ public:
 		}
 		m_node_handle.param("motor_timeout", m_motor_timeout, 1.);
 		m_node_handle.param("home_vel", m_home_vel, -1.);
+		m_node_handle.param("steer_gain", m_steer_gain, 1.);
+		m_node_handle.param("steer_lookahead", m_steer_lookahead, 0.1);
 
 		if(m_num_wheels < 1) {
 			throw std::logic_error("invalid num_wheels param");
@@ -211,30 +214,44 @@ public:
 		}
 
 		// check if we should reset steering
-		if(is_steer_reset_active)
+		if(is_steer_reset_active && all_motors_operational())
 		{
-			if(all_motors_operational())
+			bool is_all_reached = true;
+
+			for(auto& wheel : m_wheels)
 			{
-				bool is_all_reached = true;
+				motor_set_vel(wheel.drive, 0);		// stop driving
+				wheel.target_steer_pos = 0;			// set target steering
 
-				for(auto& wheel : m_wheels)
+				if(fabs(angles::normalize_angle(wheel.curr_steer_pos)) > 0.01)
 				{
-					if(fabs(angles::normalize_angle(wheel.curr_steer_pos)) > 0.01)
-					{
-						is_all_reached = false;
-						motor_set_pos_abs(wheel.steer, 0);
-					}
-				}
-
-				if(is_all_reached)
-				{
-					ROS_INFO_STREAM("Steering reset successful!");
-					is_steer_reset_active = false;
-				}
-				else {
-					begin_motion();
+					is_all_reached = false;
+//					motor_set_pos_abs(wheel.steer, 0);
 				}
 			}
+
+			if(is_all_reached)
+			{
+				ROS_INFO_STREAM("Steering reset successful!");
+				is_steer_reset_active = false;
+			}
+			else {
+//				begin_motion();
+			}
+		}
+
+		// steering and motion control
+		if(is_all_homed && all_motors_operational())
+		{
+			for(auto& wheel : m_wheels)
+			{
+				const double future_steer_pos = wheel.curr_steer_pos + wheel.curr_steer_vel * m_steer_lookahead;
+				const double delta_rad = angles::shortest_angular_distance(wheel.target_steer_pos, future_steer_pos);
+				const double control_vel = delta_rad * m_steer_gain;
+				motor_set_vel(wheel.steer, control_vel);
+			}
+			can_sync();
+			begin_motion();
 		}
 
 		// check for update timeout
@@ -250,7 +267,6 @@ public:
 			msg.length = 0;
 			can_transmit(msg);
 		}
-		can_sync();
 
 		m_last_sync_time = ros::Time::now();
 		m_sync_counter++;
@@ -509,16 +525,16 @@ private:
 	{
 		stop_motion();
 
-		all_motors_off();
-
-		// switch to position mode for steering
-		for(auto& wheel : m_wheels)
-		{
-			set_motion_pos_ctrl(wheel.steer);
-		}
-		can_sync();
-
-		all_motors_on();
+//		all_motors_off();
+//
+//		// switch to position mode for steering
+//		for(auto& wheel : m_wheels)
+//		{
+//			set_motion_pos_ctrl(wheel.steer);
+//		}
+//		can_sync();
+//
+//		all_motors_on();
 
 		is_all_homed = true;
 		is_homing_active = false;
@@ -782,10 +798,10 @@ private:
 	 */
 	void can_sync()
 	{
-		/*if(::fflush(m_can_sock) != 0) {
-			throw std::runtime_error("fsync() failed with: " + std::string(strerror(errno)));
-		}*/
-		::usleep(1000);
+//		if(::fflush(m_can_sock) != 0) {
+//			throw std::runtime_error("fsync() failed with: " + std::string(strerror(errno)));
+//		}
+		::usleep(1000);		// workaround, sleep for around 10 msgs
 	}
 
 	/*
@@ -1102,6 +1118,8 @@ private:
 	std::string m_can_iface;
 	double m_motor_timeout = 0;
 	double m_home_vel = 0;
+	double m_steer_gain = 0;
+	double m_steer_lookahead = 0;
 
 	volatile bool do_run = true;
 	bool is_homing_active = false;
@@ -1113,6 +1131,8 @@ private:
 	uint64_t m_sync_counter = 0;
 	ros::Time m_last_sync_time;
 	ros::Time m_last_update_time;
+
+
 
 	std::thread m_can_thread;
 	std::mutex m_can_mutex;
@@ -1145,7 +1165,8 @@ int main(int argc, char** argv)
 		}
 		catch(std::exception& ex)
 		{
-			if(ros::ok()) {
+			if(ros::ok())
+			{
 				ROS_ERROR_STREAM(ex.what());
 				::usleep(1000 * 1000);
 				continue;
