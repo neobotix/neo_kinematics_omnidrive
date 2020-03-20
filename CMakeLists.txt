@@ -16,6 +16,7 @@ find_package(catkin REQUIRED
             dynamic_reconfigure
             roscpp
             tf
+            neo_msgs
         )
 
 include_directories(
@@ -35,16 +36,21 @@ catkin_package(
         dynamic_reconfigure
         roscpp
 		tf
+		neo_msgs
 )
 
 add_executable(neo_omnidrive_node src/neo_omnidrive_node.cpp)
 add_dependencies(neo_omnidrive_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(neo_omnidrive_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_LIBRARIES})
 
+add_executable(neo_omnidrive_socketcan src/neo_omnidrive_socketcan.cpp)
+add_dependencies(neo_omnidrive_socketcan ${catkin_EXPORTED_TARGETS})
+target_link_libraries(neo_omnidrive_socketcan ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_LIBRARIES})
+
 add_executable(test_velocity_solver test/test_velocity_solver.cpp)
 add_executable(test_omni_kinematics test/test_omni_kinematics.cpp)
 
-install(TARGETS neo_omnidrive_node
+install(TARGETS neo_omnidrive_node neo_omnidrive_socketcan
        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

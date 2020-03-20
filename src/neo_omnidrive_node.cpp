@@ -61,11 +61,11 @@ public:
 			throw std::logic_error("missing wheel_lever_arm param");
 		}
 
-		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
+		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("odom", 1);
 		m_pub_joint_trajectory = m_node_handle.advertise<trajectory_msgs::JointTrajectory>("/drives/joint_trajectory", 1);
 
-		m_sub_cmd_vel = m_node_handle.subscribe("/cmd_vel", 1, &NeoOmniDriveNode::cmd_vel_callback, this);
-		m_sub_cmd_vel = m_node_handle.subscribe("/drives/joint_states", 1, &NeoOmniDriveNode::joint_state_callback, this);
+		m_sub_cmd_vel = m_node_handle.subscribe("cmd_vel", 1, &NeoOmniDriveNode::cmd_vel_callback, this);
+		m_sub_joint_state = m_node_handle.subscribe("drives/joint_states", 1, &NeoOmniDriveNode::joint_state_callback, this);
 
 		m_wheels.resize(m_num_wheels);
 
@@ -237,7 +237,6 @@ private:
 			m_tf_odom_broadcaster.sendTransform(odom_tf);
 		}
 	}
-
 
 private:
 	std::mutex m_node_mutex;

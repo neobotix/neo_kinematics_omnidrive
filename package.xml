@@ -1,0 +1,31 @@
+<package>
+    <name>neo_kinematics_omnidrive</name>
+    <version>1.0.0</version>
+    <description>
+
+        TODO
+
+    </description>
+    <author>Max Wittal</author>
+    <author>wittal@neobotix.de</author>
+    <maintainer email="ros@neobotix.de">Neobotix GmbH</maintainer>
+    <maintainer email="wittal@neobotix.de">Max Wittal</maintainer>
+    <license>BSD</license>
+    <url>http://wiki.ros.org/base_local_planner</url>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>cmake_modules</build_depend>
+    <build_depend>dynamic_reconfigure</build_depend>
+    <build_depend>roscpp</build_depend>
+    <build_depend>tf</build_depend>
+    <build_depend>neo_msgs</build_depend>
+
+    <run_depend>dynamic_reconfigure</run_depend>
+    <run_depend>roscpp</run_depend>
+    <run_depend>tf</run_depend>
+    <run_depend>neo_msgs</run_depend>
+
+</package>
+
+
