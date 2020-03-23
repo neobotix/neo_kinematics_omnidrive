@@ -70,6 +70,7 @@ public:
 		int32_t home_dig_in = 0;				// digital input for homing switch
 		double home_angle = 0;					// home steering angle in rad
 
+		double target_wheel_vel = 0;			// current wheel velocity target in rad/s
 		double target_steer_pos = 0;			// current steering target angle in rad
 		double curr_wheel_pos = 0;				// current wheel angle in rad
 		double curr_wheel_vel = 0;				// current wheel velocity in rad/s
@@ -244,6 +245,8 @@ public:
 				const double future_steer_pos = wheel.curr_steer_pos + wheel.curr_steer_vel * m_steer_lookahead;
 				const double delta_rad = angles::shortest_angular_distance(wheel.target_steer_pos, future_steer_pos);
 				const double control_vel = -1 * delta_rad * m_steer_gain;
+
+				motor_set_vel(wheel.drive, wheel.target_wheel_vel);
 				motor_set_vel(wheel.steer, control_vel);
 			}
 			can_sync();
@@ -395,9 +398,51 @@ private:
 			return;
 		}
 
-		// subtract home angle from commanded angle
+		// check proper message
+		if(joint_trajectory.points.size() != joint_trajectory.joint_names.size()) {
+			ROS_WARN_STREAM("Invalid JointTrajectory message!");
+			stop_motion();
+			return;
+		}
 
-		// TODO
+		std::vector<double> wheel_vel(m_num_wheels);
+		std::vector<double> wheel_angle(m_num_wheels);
+		std::vector<int> got_value(m_num_wheels);
+
+		for(size_t i = 0; joint_trajectory.joint_names.size(); ++i)
+		{
+			for(int k = 0; k < m_num_wheels; ++k)
+			{
+				if(joint_trajectory.joint_names[i] == m_wheels[k].drive.joint_name) {
+					if(joint_trajectory.points[i].velocities.size() > 0) {
+						wheel_vel[k] = joint_trajectory.points[i].velocities[0];
+						got_value[k] |= 1;
+					}
+				}
+				if(joint_trajectory.joint_names[i] == m_wheels[k].steer.joint_name) {
+					if(joint_trajectory.points[i].positions.size() > 0) {
+						wheel_angle[k] = joint_trajectory.points[i].positions[0];
+						got_value[k] |= 2;
+					}
+				}
+			}
+		}
+
+		// check that we have new values for every motor
+		for(int i = 0; i < m_num_wheels; ++i) {
+			if(got_value[i] != 3) {
+				ROS_WARN_STREAM("Invalid JointTrajectory message!");
+				stop_motion();
+				return;
+			}
+		}
+
+		// apply new commands
+		for(int i = 0; i < m_num_wheels; ++i)
+		{
+			m_wheels[i].target_wheel_vel = wheel_vel[i];
+			m_wheels[i].target_steer_pos = wheel_angle[i] - m_wheels[i].home_angle;
+		}
 	}
 
 	void emergency_stop_callback(const neo_msgs::EmergencyStopState::ConstPtr& state)
