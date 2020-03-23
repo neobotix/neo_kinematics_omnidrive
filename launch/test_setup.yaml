@@ -1,10 +1,10 @@
 
 num_wheels: 4
-update_rate: 50
+update_rate: 100
 wheel_radius: 0.088
 wheel_lever_arm: 0.045
 steer_gain: 10
-steer_lookahead: 0.03
+steer_lookahead: 0.05
 max_steer_vel: 8.0
 
 can_iface: can0
