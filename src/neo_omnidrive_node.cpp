@@ -194,8 +194,8 @@ private:
 				const double yaw_mid = m_curr_odom_yaw + 0.5 * yawrate_mid * dt;
 
 				// integrate position using midpoint velocities and yaw angle
-				m_curr_odom_x += vel_x_mid * dt * cos(yaw_mid);
-				m_curr_odom_y += vel_x_mid * dt * sin(yaw_mid);
+				m_curr_odom_x += vel_x_mid * dt * cos(yaw_mid) + vel_y_mid * dt * sin(yaw_mid);
+				m_curr_odom_y += vel_x_mid * dt * sin(yaw_mid) + vel_y_mid * dt * cos(yaw_mid);
 
 				// integrate yaw angle using midpoint yawrate
 				m_curr_odom_yaw += yawrate_mid * dt;
