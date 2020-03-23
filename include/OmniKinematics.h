@@ -136,7 +136,7 @@ public:
 			// store new values
 			OmniWheel new_wheel = wheel;
 			new_wheel.set_wheel_angle(new_wheel_angle - M_PI);
-			new_wheel.wheel_vel = new_wheel_vel;
+			new_wheel.wheel_vel = -1 * new_wheel_vel;
 			result.push_back(new_wheel);
 		}
 		return result;

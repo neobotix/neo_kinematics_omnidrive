@@ -159,7 +159,7 @@ private:
 				if(joint_state.name[i] == wheel.drive_joint_name)
 				{
 					// update wheel velocity
-					wheel.wheel_vel = joint_state.velocity[i] * m_wheel_radius;
+					wheel.wheel_vel = -1 * joint_state.velocity[i] * m_wheel_radius;
 				}
 				if(joint_state.name[i] == wheel.steer_joint_name)
 				{
