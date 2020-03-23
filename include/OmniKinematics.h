@@ -52,8 +52,7 @@ class OmniKinematics {
 public:
 	double zero_vel_threshold = 0.005;				// [m/s]
 	double small_vel_threshold = 0.05;				// [m/s]
-	double steering_hysteresis = 0.8;				// [rad]
-	double steering_hysteresis_stopped = 0.2;		// [rad]
+	double steering_hysteresis = 0.5;				// [rad]
 
 	OmniKinematics(int num_wheels_)
 		:	num_wheels(num_wheels_)
@@ -127,7 +126,7 @@ public:
 			}
 
 			if(is_driving[i]) {
-				last_stop_angle[i] = wheels[i].wheel_angle;		// remember angle
+				last_stop_angle[i] = wheel.wheel_angle;			// remember angle
 			} else {
 				new_wheel_angle = last_stop_angle[i];			// keep last known angle
 			}
@@ -138,9 +137,17 @@ public:
 
 			if(!is_fast[i])
 			{
+				// first choose closest to current
+				if(fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle)) > M_PI / 2)
+				{
+					is_alternate = true;
+				} else {
+					is_alternate = false;
+				}
+
 				// if wheel is not driving fast choose the solution which is closer to outer wheel angle
 				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
-						> M_PI / 2 + (is_driving[i] ? steering_hysteresis : steering_hysteresis_stopped))
+						> M_PI / 2 + (is_alternate ? -1 : 1) * steering_hysteresis)
 				{
 					is_alternate = true;
 				} else {
