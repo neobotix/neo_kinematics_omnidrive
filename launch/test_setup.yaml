@@ -4,7 +4,7 @@ update_rate: 50
 wheel_radius: 0.088
 wheel_lever_arm: 0.045
 steer_gain: 10
-steer_lookahead: 0.05
+steer_lookahead: 0.03
 max_steer_vel: 8.0
 
 can_iface: can0
