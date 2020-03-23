@@ -59,6 +59,7 @@ public:
 	{
 		is_driving.resize(num_wheels_);
 		is_alternate.resize(num_wheels_);
+		last_stop_angles.resize(num_wheels_);
 	}
 
 	/*
@@ -80,12 +81,21 @@ public:
 			for(int i = 0; i < num_wheels; ++i)
 			{
 				OmniWheel new_wheel = wheels[i];
-				new_wheel.wheel_angle = wheels[i].home_angle;
+				if(!is_stopped) {
+					last_stop_angles[i] = wheels[i].wheel_angle;	// remember angle
+				}
+				if(home_on_stop) {
+					new_wheel.wheel_angle = wheels[i].home_angle;
+				} else {
+					new_wheel.wheel_angle = last_stop_angles[i];
+				}
 				new_wheel.wheel_vel = 0;
 				result.push_back(new_wheel);
 			}
+			is_stopped = true;
 			return result;
 		}
+		is_stopped = false;
 
 		for(int i = 0; i < num_wheels; ++i)
 		{
@@ -145,8 +155,10 @@ public:
 private:
 	int num_wheels = 0;
 
+	bool is_stopped = false;
 	std::vector<bool> is_driving;
 	std::vector<bool> is_alternate;
+	std::vector<double> last_stop_angles;
 
 };
 
