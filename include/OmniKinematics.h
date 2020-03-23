@@ -50,21 +50,20 @@
  */
 class OmniKinematics {
 public:
-	double zero_vel_threshold = 0.005;		// [m/s]
-	double small_vel_threshold = 0.05;		// [m/s]
-	double steering_hysteresis = 0.02;		// [rad]
-	bool home_on_stop = false;
+	double zero_vel_threshold = 0.005;				// [m/s]
+	double small_vel_threshold = 0.05;				// [m/s]
+	double steering_hysteresis = 0.8;				// [rad]
+	double steering_hysteresis_stopped = 0.2;		// [rad]
 
 	OmniKinematics(int num_wheels_)
 		:	num_wheels(num_wheels_)
 	{
 		is_driving.resize(num_wheels_);
 		is_fast.resize(num_wheels_);
-		is_alternate.resize(num_wheels_);
 		last_stop_angle.resize(num_wheels_);
 	}
 
-	// Sets initial steerinig angles to home angle
+	// Sets initial steering angles to home angle
 	void initialize(const std::vector<OmniWheel>& wheels)
 	{
 		if(wheels.size() != num_wheels) {
@@ -97,15 +96,13 @@ public:
 			const double vel_x = move_vel_x + tangential * -sin(wheel_pos_angle);		// tangential is 90 deg rotated (ie. in y direction at phi=0)
 			const double vel_y = move_vel_y + tangential * cos(wheel_pos_angle);
 
-			// compute outer steering angle
-			const double center_pos_angle = ::atan2(wheel.center_pos_y, wheel.center_pos_x);
-			const double outer_wheel_angle = angles::normalize_angle(center_pos_angle - M_PI / 2);
-
 			// convert desired x + y velocity to steering angle and drive velocity
 			double new_wheel_angle = ::atan2(vel_y, vel_x);
 			double new_wheel_vel = ::hypot(vel_x, vel_y);
 
-			// check if wheel is currently driving or should be driving
+			bool is_alternate = false;
+
+			// check if wheel should be driving
 			if(fabs(new_wheel_vel) > (is_driving[i] ? zero_vel_threshold : 2 * zero_vel_threshold))
 			{
 				// check if wheel is currently driving fast and should continue as such
@@ -113,46 +110,46 @@ public:
 				{
 					// if wheel is driving fast choose the closest solution in terms of velocity direction
 					if(new_wheel_vel * wheel.wheel_vel < 0) {
-						is_alternate[i] = true;
+						is_alternate = true;
 					} else {
-						is_alternate[i] = false;
+						is_alternate = false;
 					}
 					is_fast[i] = true;
 				}
-				else
-				{
-					// if wheel is not driving fast choose the solution which is closer to outer wheel angle
-					if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
-							> M_PI / 2 + (is_alternate[i] ? -1 : 1) * steering_hysteresis)
-					{
-						is_alternate[i] = true;
-					} else {
-						is_alternate[i] = false;
-					}
+				else {
 					is_fast[i] = false;
 				}
 				is_driving[i] = true;
 			}
-			else
-			{
-				// keep last known angle
-				new_wheel_angle = last_stop_angle[i];
-
-				// if wheel is not driving choose the solution which is closer to outer wheel angle
-				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
-						> M_PI / 2 + (is_alternate[i] ? -1 : 1) * steering_hysteresis)
-				{
-					is_alternate[i] = true;
-				} else {
-					is_alternate[i] = false;
-				}
+			else {
+				is_fast[i] = false;
 				is_driving[i] = false;
 			}
 
 			if(is_driving[i]) {
-				last_stop_angle[i] = wheels[i].wheel_angle;	// remember angle
+				last_stop_angle[i] = wheels[i].wheel_angle;		// remember angle
+			} else {
+				new_wheel_angle = last_stop_angle[i];			// keep last known angle
 			}
-			if(is_alternate[i]) {
+
+			// compute outer steering angle
+			const double center_pos_angle = ::atan2(wheel.center_pos_y, wheel.center_pos_x);
+			const double outer_wheel_angle = angles::normalize_angle(center_pos_angle - M_PI / 2);
+
+			if(!is_fast[i])
+			{
+				// if wheel is not driving fast choose the solution which is closer to outer wheel angle
+				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
+						> M_PI / 2 + (is_driving[i] ? steering_hysteresis : steering_hysteresis_stopped))
+				{
+					is_alternate = true;
+				} else {
+					is_alternate = false;
+				}
+			}
+
+			if(is_alternate)
+			{
 				new_wheel_angle = angles::normalize_angle(new_wheel_angle + M_PI);
 				new_wheel_vel = -1 * new_wheel_vel;
 			}
@@ -171,7 +168,6 @@ private:
 
 	std::vector<bool> is_driving;
 	std::vector<bool> is_fast;
-	std::vector<bool> is_alternate;
 	std::vector<double> last_stop_angle;
 
 };
