@@ -890,7 +890,7 @@ private:
 			joint_state->name.push_back(wheel.drive.joint_name);
 			joint_state->name.push_back(wheel.steer.joint_name);
 			joint_state->position.push_back(wheel.curr_wheel_pos);
-			joint_state->position.push_back(wheel.curr_steer_pos);
+			joint_state->position.push_back(wheel.curr_steer_pos + wheel.home_angle);
 			joint_state->velocity.push_back(wheel.curr_wheel_vel);
 			joint_state->velocity.push_back(wheel.curr_steer_vel);
 			joint_state->effort.push_back(0);

@@ -164,7 +164,7 @@ private:
 				if(joint_state.name[i] == wheel.steer_joint_name)
 				{
 					// update wheel steering angle and wheel position (due to lever arm)
-					wheel.set_wheel_angle(joint_state.position[i]);
+					wheel.set_wheel_angle(joint_state.position[i] + M_PI);
 				}
 			}
 		}
