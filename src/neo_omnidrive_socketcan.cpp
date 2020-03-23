@@ -81,7 +81,7 @@ public:
 	{
 		int id = -1;
 		int length = 0;
-		char data[8] = {};
+		uint8_t data[8] = {};
 	};
 
 	NeoSocketCanNode()
@@ -226,7 +226,6 @@ public:
 				if(fabs(angles::normalize_angle(wheel.curr_steer_pos)) > 0.01)
 				{
 					is_all_reached = false;
-//					motor_set_pos_abs(wheel.steer, 0);
 				}
 			}
 
@@ -234,9 +233,6 @@ public:
 			{
 				ROS_INFO_STREAM("Steering reset successful!");
 				is_steer_reset_active = false;
-			}
-			else {
-//				begin_motion();
 			}
 		}
 
@@ -390,8 +386,7 @@ private:
 		std::lock_guard<std::mutex> lock(m_node_mutex);
 
 		// check if we are ready for normal operation
-		if(!is_all_homed || is_steer_reset_active)
-		{
+		if(!is_all_homed || is_steer_reset_active) {
 			return;
 		}
 
@@ -525,17 +520,6 @@ private:
 	void finish_homing()
 	{
 		stop_motion();
-
-//		all_motors_off();
-//
-//		// switch to position mode for steering
-//		for(auto& wheel : m_wheels)
-//		{
-//			set_motion_pos_ctrl(wheel.steer);
-//		}
-//		can_sync();
-//
-//		all_motors_on();
 
 		is_all_homed = true;
 		is_homing_active = false;
@@ -799,9 +783,6 @@ private:
 	 */
 	void can_sync()
 	{
-//		if(::fflush(m_can_sock) != 0) {
-//			throw std::runtime_error("fsync() failed with: " + std::string(strerror(errno)));
-//		}
 		::usleep(1000);		// workaround, sleep for around 10 msgs
 	}
 
@@ -891,8 +872,6 @@ private:
 		int32_t value = 0;
 		::memcpy(&value, msg.data + offset, 4);
 		return value;
-//		return ((msg.data[offset + 3]) << 24) | ((msg.data[offset + 2]) << 16)
-//				| ((msg.data[offset + 1]) << 8) | (msg.data[offset + 0]);
 	}
 
 	void handle_PDO1(motor_t& motor, const can_msg_t& msg)
