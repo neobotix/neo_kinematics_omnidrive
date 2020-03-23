@@ -85,13 +85,14 @@ public:
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/home_angle", m_wheels[i].home_angle)) {
 				throw std::logic_error("home_angle param missing for steering motor" + std::to_string(i));
 			}
+			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
 
-		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("odom", 1);
+		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
 		m_pub_joint_trajectory = m_node_handle.advertise<trajectory_msgs::JointTrajectory>("/drives/joint_trajectory", 1);
 
-		m_sub_cmd_vel = m_node_handle.subscribe("cmd_vel", 1, &NeoOmniDriveNode::cmd_vel_callback, this);
-		m_sub_joint_state = m_node_handle.subscribe("drives/joint_states", 1, &NeoOmniDriveNode::joint_state_callback, this);
+		m_sub_cmd_vel = m_node_handle.subscribe("/cmd_vel", 1, &NeoOmniDriveNode::cmd_vel_callback, this);
+		m_sub_joint_state = m_node_handle.subscribe("/drives/joint_states", 1, &NeoOmniDriveNode::joint_state_callback, this);
 
 		m_kinematics = std::make_shared<OmniKinematics>(m_num_wheels);
 		m_velocity_solver = std::make_shared<VelocitySolver>(m_num_wheels);
@@ -102,14 +103,14 @@ public:
 		std::lock_guard<std::mutex> lock(m_node_mutex);
 
 		// compute new wheel angles and velocities
-		m_kinematics->compute(m_wheels, m_curr_cmd_vel.linear.x, m_curr_cmd_vel.linear.y, m_curr_cmd_vel.angular.z);
+		auto cmd_wheels = m_kinematics->compute(m_wheels, m_curr_cmd_vel.linear.x, m_curr_cmd_vel.linear.y, m_curr_cmd_vel.angular.z);
 
 		trajectory_msgs::JointTrajectory::Ptr joint_trajectory = boost::make_shared<trajectory_msgs::JointTrajectory>();
 		joint_trajectory->header.stamp = ros::Time::now();
 
 		trajectory_msgs::JointTrajectoryPoint point;
 
-		for(const auto& wheel : m_wheels)
+		for(const auto& wheel : cmd_wheels)
 		{
 			joint_trajectory->joint_names.push_back(wheel.drive_joint_name);
 			joint_trajectory->joint_names.push_back(wheel.steer_joint_name);

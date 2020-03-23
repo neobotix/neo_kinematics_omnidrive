@@ -144,11 +144,12 @@ public:
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/enc_home_offset", m_wheels[i].steer.enc_home_offset)) {
 				throw std::logic_error("enc_home_offset param missing for steering motor" + std::to_string(i));
 			}
+			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
 
-		m_pub_joint_state = m_node_handle.advertise<sensor_msgs::JointState>("drives/joint_states", 1);
+		m_pub_joint_state = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states", 1);
 
-		m_sub_joint_trajectory = m_node_handle.subscribe("drives/joint_trajectory", 1, &NeoSocketCanNode::joint_trajectory_callback, this);
+		m_sub_joint_trajectory = m_node_handle.subscribe("/drives/joint_trajectory", 1, &NeoSocketCanNode::joint_trajectory_callback, this);
 		m_sub_emergency_stop = m_node_handle.subscribe("emergency_stop_state", 1, &NeoSocketCanNode::emergency_stop_callback, this);
 
 		m_can_thread = std::thread(&NeoSocketCanNode::receive_loop, this);
@@ -399,7 +400,7 @@ private:
 		}
 
 		// check proper message
-		if(joint_trajectory.points.size() != joint_trajectory.joint_names.size()) {
+		if(joint_trajectory.points.size() < 1) {
 			ROS_WARN_STREAM("Invalid JointTrajectory message!");
 			stop_motion();
 			return;
@@ -409,19 +410,19 @@ private:
 		std::vector<double> wheel_angle(m_num_wheels);
 		std::vector<int> got_value(m_num_wheels);
 
-		for(size_t i = 0; joint_trajectory.joint_names.size(); ++i)
+		for(size_t i = 0; i < joint_trajectory.joint_names.size(); ++i)
 		{
 			for(int k = 0; k < m_num_wheels; ++k)
 			{
 				if(joint_trajectory.joint_names[i] == m_wheels[k].drive.joint_name) {
-					if(joint_trajectory.points[i].velocities.size() > 0) {
-						wheel_vel[k] = joint_trajectory.points[i].velocities[0];
+					if(joint_trajectory.points[0].velocities.size() > i) {
+						wheel_vel[k] = joint_trajectory.points[0].velocities[i];
 						got_value[k] |= 1;
 					}
 				}
 				if(joint_trajectory.joint_names[i] == m_wheels[k].steer.joint_name) {
-					if(joint_trajectory.points[i].positions.size() > 0) {
-						wheel_angle[k] = joint_trajectory.points[i].positions[0];
+					if(joint_trajectory.points[0].positions.size() > i) {
+						wheel_angle[k] = joint_trajectory.points[0].positions[i];
 						got_value[k] |= 2;
 					}
 				}

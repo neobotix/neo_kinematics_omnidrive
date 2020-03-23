@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <launch>
 	
-	<!-- upload parameters -->
+    <!-- upload parameters -->
     <rosparam command="load" ns="kinematics_omnidrive" file="$(find neo_kinematics_omnidrive)/launch/test_setup.yaml"/>
 	
-	<!-- start nodes -->
+    <!-- start nodes -->
     <node pkg="neo_kinematics_omnidrive" type="neo_omnidrive_node" ns="kinematics_omnidrive" name="neo_omnidrive_node" respawn="false" output="screen"/>
 
     <node pkg="neo_kinematics_omnidrive" type="neo_omnidrive_socketcan" ns="kinematics_omnidrive" name="neo_omnidrive_socketcan" respawn="false" output="screen">
-    <remap from="emergency_stop_state" to="/relayboard_v2/emergency_stop_state"/>
+      <remap from="emergency_stop_state" to="/relayboard_v2/emergency_stop_state"/>
     </node>
 
 </launch>
