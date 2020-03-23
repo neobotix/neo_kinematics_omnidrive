@@ -42,7 +42,7 @@ public:
 		int32_t rot_sign = 0;					// motor rotation direction
 		int32_t enc_ticks_per_rev = 0;			// encoder ticks per motor revolution
 		int32_t enc_home_offset = 0;			// encoder offset for true home position
-		int32_t max_vel_enc_s = 1000000;		// max motor velocity in ticks/s (positive)
+		int32_t max_vel_enc_s = 500000;			// max motor velocity in ticks/s (positive)
 		int32_t max_accel_enc_s = 1000000;		// max motor acceleration in ticks/s^2 (positive)
 		int32_t can_Tx_PDO1 = -1;
 		int32_t can_Tx_PDO2 = -1;
@@ -97,6 +97,7 @@ public:
 		m_node_handle.param("home_vel", m_home_vel, -1.);
 		m_node_handle.param("steer_gain", m_steer_gain, 1.);
 		m_node_handle.param("steer_lookahead", m_steer_lookahead, 0.1);
+		m_node_handle.param("max_steer_vel", m_max_steer_vel, 10.);
 
 		if(m_num_wheels < 1) {
 			throw std::logic_error("invalid num_wheels param");
@@ -248,7 +249,7 @@ public:
 				const double control_vel = -1 * delta_rad * m_steer_gain;
 
 				motor_set_vel(wheel.drive, wheel.target_wheel_vel);
-				motor_set_vel(wheel.steer, control_vel);
+				motor_set_vel(wheel.steer, fmin(fmax(control_vel, -m_max_steer_vel), m_max_steer_vel));
 			}
 			can_sync();
 			begin_motion();
@@ -1149,6 +1150,7 @@ private:
 	double m_home_vel = 0;
 	double m_steer_gain = 0;
 	double m_steer_lookahead = 0;
+	double m_max_steer_vel = 0;
 
 	volatile bool do_run = true;
 	bool is_homing_active = false;
