@@ -96,6 +96,8 @@ public:
 
 		m_kinematics = std::make_shared<OmniKinematics>(m_num_wheels);
 		m_velocity_solver = std::make_shared<VelocitySolver>(m_num_wheels);
+
+		m_kinematics->initialize(m_wheels);
 	}
 
 	void control_step()
