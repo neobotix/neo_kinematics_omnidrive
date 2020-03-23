@@ -358,26 +358,28 @@ public:
 
 	void shutdown()
 	{
-		std::lock_guard<std::mutex> lock(m_node_mutex);
+		{
+			std::lock_guard<std::mutex> lock(m_node_mutex);
 
-		// disable waiting for CAN socket, since we are shutting down
-		m_wait_for_can_sock = false;
+			// disable waiting for CAN socket, since we are shutting down
+			m_wait_for_can_sock = false;
 
-		try {
-			stop_motion();
-			can_sync();
-			all_motors_off();
-			can_sync();
+			try {
+				stop_motion();
+				can_sync();
+				all_motors_off();
+				can_sync();
+			}
+			catch(...) {
+				// ignore
+			}
 		}
-		catch(...) {
-			// ignore
-		}
-
-		do_run = false;
 		{
 			std::lock_guard<std::mutex> lock(m_can_mutex);
+			do_run = false;
 			if(m_can_sock >= 0) {
-				::shutdown(m_can_sock, SHUT_RDWR);		// trigger receive thread to exit
+				::close(m_can_sock);
+				m_can_sock = -1;
 			}
 		}
 		if(m_can_thread.joinable()) {
