@@ -158,8 +158,8 @@ public:
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
 
-		m_pub_joint_state = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states", 1);
-		m_pub_joint_state_raw = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states_raw", 1);
+		m_pub_joint_state = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states", 10);
+		m_pub_joint_state_raw = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states_raw", 10);
 
 		m_sub_joint_trajectory = m_node_handle.subscribe("/drives/joint_trajectory", 1, &NeoSocketCanNode::joint_trajectory_callback, this);
 		m_sub_emergency_stop = m_node_handle.subscribe("emergency_stop_state", 1, &NeoSocketCanNode::emergency_stop_callback, this);
