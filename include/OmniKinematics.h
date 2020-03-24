@@ -131,10 +131,6 @@ public:
 				new_wheel_angle = last_stop_angle[i];			// keep last known angle
 			}
 
-			// compute outer steering angle
-			const double center_pos_angle = ::atan2(wheel.center_pos_y, wheel.center_pos_x);
-			const double outer_wheel_angle = angles::normalize_angle(center_pos_angle - M_PI / 2);
-
 			if(!is_fast[i])
 			{
 				// first choose closest to current
@@ -144,6 +140,10 @@ public:
 				} else {
 					is_alternate = false;
 				}
+
+				// compute outer steering angle
+				const double center_pos_angle = ::atan2(wheel.center_pos_y, wheel.center_pos_x);
+				const double outer_wheel_angle = angles::normalize_angle(center_pos_angle - M_PI / 2);
 
 				// if wheel is not driving fast choose the solution which is closer to outer wheel angle
 				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
