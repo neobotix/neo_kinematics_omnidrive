@@ -50,12 +50,14 @@ public:
 		int32_t can_Tx_SDO = -1;
 		int32_t can_Rx_SDO = -1;
 		double gear_ratio = 0;					// gear ratio
+		double torque_constant = 0;				// conversion factor from current to torque
 
 		motor_state_e state = ST_PRE_INITIALIZED;
 		int32_t curr_enc_pos_inc = 0;			// current encoder position value in ticks
 		int32_t curr_enc_vel_inc_s = 0;			// current encoder velocity value in ticks/s
 		int32_t curr_status = 0;				// current status as received by SR msg
 		int32_t curr_motor_failure = 0;			// current motor failure status as received by MF msg
+		double curr_torque = 0;					// current measure motor torque
 		ros::Time request_send_time;			// time of last status update request
 		ros::Time status_recv_time;				// time of last status update received
 		ros::Time last_update_time;				// time of last sync update received
@@ -101,6 +103,7 @@ public:
 		m_node_handle.param("steer_low_pass", m_steer_low_pass, 0.5);
 		m_node_handle.param("max_steer_vel", m_max_steer_vel, 10.);
 		m_node_handle.param("motor_delay", m_motor_delay, 0.);
+		m_node_handle.param("measure_torque", m_measure_torque, false);
 
 		if(m_num_wheels < 1) {
 			throw std::logic_error("invalid num_wheels param");
@@ -148,6 +151,9 @@ public:
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/enc_home_offset", m_wheels[i].steer.enc_home_offset)) {
 				throw std::logic_error("enc_home_offset param missing for steering motor" + std::to_string(i));
 			}
+			m_node_handle.param("drive" + std::to_string(i) + "/torque_constant", m_wheels[i].drive.torque_constant);
+			m_node_handle.param("steer" + std::to_string(i) + "/torque_constant", m_wheels[i].steer.torque_constant);
+
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
 
@@ -279,6 +285,14 @@ public:
 
 		m_last_sync_time = ros::Time::now();
 		m_sync_counter++;
+
+		if(m_measure_torque)
+		{
+			for(auto& wheel : m_wheels)
+			{
+				canopen_query(wheel.drive, 'I', 'Q', 0);	// query motor current
+			}
+		}
 
 		if(m_sync_counter % 10 == 0)
 		{
@@ -905,8 +919,8 @@ private:
 			joint_state->position.push_back(wheel.curr_steer_pos + wheel.home_angle);
 			joint_state->velocity.push_back(wheel.curr_wheel_vel);
 			joint_state->velocity.push_back(wheel.curr_steer_vel);
-			joint_state->effort.push_back(0);
-			joint_state->effort.push_back(0);
+			joint_state->effort.push_back(wheel.drive.curr_torque);
+			joint_state->effort.push_back(wheel.steer.curr_torque);
 		}
 		m_pub_joint_state.publish(joint_state);
 	}
@@ -924,8 +938,8 @@ private:
 			joint_state->position.push_back(wheel.steer.curr_enc_pos_inc);
 			joint_state->velocity.push_back(wheel.drive.curr_enc_vel_inc_s);
 			joint_state->velocity.push_back(wheel.steer.curr_enc_vel_inc_s);
-			joint_state->effort.push_back(0);
-			joint_state->effort.push_back(0);
+			joint_state->effort.push_back(wheel.drive.curr_torque);
+			joint_state->effort.push_back(wheel.steer.curr_torque);
 		}
 		m_pub_joint_state_raw.publish(joint_state);
 	}
@@ -948,6 +962,16 @@ private:
 			throw std::logic_error("invalid offset");
 		}
 		int32_t value = 0;
+		::memcpy(&value, msg.data + offset, 4);
+		return value;
+	}
+
+	float read_float(const can_msg_t& msg, int offset) const
+	{
+		if(offset < 0 || offset > 4) {
+			throw std::logic_error("invalid offset");
+		}
+		float value = 0;
 		::memcpy(&value, msg.data + offset, 4);
 		return value;
 	}
@@ -977,6 +1001,10 @@ private:
 		if(msg.data[0] == 'H' && msg.data[1] == 'M')
 		{
 			motor.homing_state = (msg.data[4] == 0 ? 1 : 0);
+		}
+		if(msg.data[0] == 'I' && msg.data[1] == 'Q')
+		{
+			motor.curr_torque = read_float(msg, 4) * motor.torque_constant;
 		}
 	}
 
@@ -1185,6 +1213,7 @@ private:
 	double m_steer_low_pass = 0;
 	double m_max_steer_vel = 0;
 	double m_motor_delay = 0;
+	bool m_measure_torque = false;
 
 	volatile bool do_run = true;
 	bool is_homing_active = false;
