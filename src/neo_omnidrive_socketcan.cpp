@@ -60,7 +60,7 @@ public:
 		double curr_torque = 0;					// current measure motor torque
 		ros::Time request_send_time;			// time of last status update request
 		ros::Time status_recv_time;				// time of last status update received
-		ros::Time last_update_time;				// time of last sync update received
+		ros::Time update_recv_time;				// time of last sync update received
 		int homing_state = -1;					// current homing state (-1 = unknown, 0 = active, 1 = finished)
 	};
 
@@ -881,13 +881,13 @@ private:
 			}
 
 			// re-compute wheel values
-			if(wheel.drive.last_update_time > m_last_sync_time)
+			if(wheel.drive.update_recv_time > m_last_sync_time)
 			{
 				wheel.curr_wheel_pos = calc_wheel_pos(wheel.drive);
 				wheel.curr_wheel_vel = calc_wheel_vel(wheel.drive);
 				num_motor_updates++;
 			}
-			if(wheel.steer.last_update_time > m_last_sync_time)
+			if(wheel.steer.update_recv_time > m_last_sync_time)
 			{
 				wheel.curr_steer_pos = calc_wheel_pos(wheel.steer);
 				wheel.curr_steer_vel = calc_wheel_vel(wheel.steer);
@@ -980,7 +980,7 @@ private:
 	{
 		motor.curr_enc_pos_inc = read_int32(msg, 0);
 		motor.curr_enc_vel_inc_s = read_int32(msg, 4);
-		motor.last_update_time = ros::Time::now();
+		motor.update_recv_time = ros::Time::now();
 	}
 
 	void handle_PDO2(motor_t& motor, const can_msg_t& msg)
