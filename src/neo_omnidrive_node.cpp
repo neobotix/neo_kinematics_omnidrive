@@ -60,6 +60,7 @@ public:
 		if(!m_node_handle.getParam("wheel_lever_arm", m_wheel_lever_arm)) {
 			throw std::logic_error("missing wheel_lever_arm param");
 		}
+		m_node_handle.param("cmd_timeout", m_cmd_timeout, 0.2);
 
 		if(m_num_wheels < 1) {
 			throw std::logic_error("invalid num_wheels param");
@@ -108,11 +109,27 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(m_node_mutex);
 
+		const ros::Time now = ros::Time::now();
+
+		// check for input timeout
+		if((now - m_last_cmd_time).toSec() > m_cmd_timeout)
+		{
+			if(!is_cmd_timeout && !m_last_cmd_time.isZero()) {
+				ROS_WARN_STREAM("cmd_vel input timeout! Stopping now.");
+			}
+			// reset values to zero
+			m_last_cmd_vel = geometry_msgs::Twist();
+			is_cmd_timeout = true;
+		}
+		else {
+			is_cmd_timeout = false;
+		}
+
 		// compute new wheel angles and velocities
-		auto cmd_wheels = m_kinematics->compute(m_wheels, m_curr_cmd_vel.linear.x, m_curr_cmd_vel.linear.y, m_curr_cmd_vel.angular.z);
+		auto cmd_wheels = m_kinematics->compute(m_wheels, m_last_cmd_vel.linear.x, m_last_cmd_vel.linear.y, m_last_cmd_vel.angular.z);
 
 		trajectory_msgs::JointTrajectory::Ptr joint_trajectory = boost::make_shared<trajectory_msgs::JointTrajectory>();
-		joint_trajectory->header.stamp = ros::Time::now();
+		joint_trajectory->header.stamp = now;
 
 		trajectory_msgs::JointTrajectoryPoint point;
 
@@ -139,7 +156,8 @@ private:
 	void cmd_vel_callback(const geometry_msgs::Twist& twist)
 	{
 		std::lock_guard<std::mutex> lock(m_node_mutex);
-		m_curr_cmd_vel = twist;
+		m_last_cmd_time = ros::Time::now();
+		m_last_cmd_vel = twist;
 	}
 
 	void joint_state_callback(const sensor_msgs::JointState& joint_state)
@@ -273,13 +291,16 @@ private:
 	int m_num_wheels = 0;
 	double m_wheel_radius = 0;
 	double m_wheel_lever_arm = 0;
+	double m_cmd_timeout = 0;
 
 	std::vector<OmniWheel> m_wheels;
 
 	std::shared_ptr<OmniKinematics> m_kinematics;
 	std::shared_ptr<VelocitySolver> m_velocity_solver;
 
-	geometry_msgs::Twist m_curr_cmd_vel;
+	ros::Time m_last_cmd_time;
+	geometry_msgs::Twist m_last_cmd_vel;
+	bool is_cmd_timeout = false;
 
 	ros::Time m_curr_odom_time;
 	double m_curr_odom_x = 0;
