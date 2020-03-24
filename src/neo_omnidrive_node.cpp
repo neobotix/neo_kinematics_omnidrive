@@ -97,6 +97,10 @@ public:
 		m_kinematics = std::make_shared<OmniKinematics>(m_num_wheels);
 		m_velocity_solver = std::make_shared<VelocitySolver>(m_num_wheels);
 
+		m_node_handle.param("zero_vel_threshold", m_kinematics->zero_vel_threshold, 0.005);
+		m_node_handle.param("small_vel_threshold", m_kinematics->small_vel_threshold, 0.05);
+		m_node_handle.param("steer_hysteresis", m_kinematics->steer_hysteresis, 30.0);
+		m_kinematics->steer_hysteresis = M_PI * m_kinematics->steer_hysteresis / 180;
 		m_kinematics->initialize(m_wheels);
 	}
 

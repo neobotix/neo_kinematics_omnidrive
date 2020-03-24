@@ -50,9 +50,9 @@
  */
 class OmniKinematics {
 public:
-	double zero_vel_threshold = 0.005;				// [m/s]
-	double small_vel_threshold = 0.05;				// [m/s]
-	double steering_hysteresis = 0.5;				// [rad]
+	double zero_vel_threshold = 0.005;			// [m/s]
+	double small_vel_threshold = 0.05;			// [m/s]
+	double steer_hysteresis = 0.5;				// [rad]
 
 	OmniKinematics(int num_wheels_)
 		:	num_wheels(num_wheels_)
@@ -89,8 +89,8 @@ public:
 		for(int i = 0; i < num_wheels; ++i)
 		{
 			const OmniWheel& wheel = wheels[i];
-			const double wheel_pos_radius = wheel.get_wheel_pos_radius();		// wheel position in polar coords [m]
-			const double wheel_pos_angle = wheel.get_wheel_pos_angle();			// wheel position in polar coords [rad]
+			const double wheel_pos_radius = wheel.get_wheel_pos_radius();				// wheel position in polar coords [m]
+			const double wheel_pos_angle = wheel.get_wheel_pos_angle();					// wheel position in polar coords [rad]
 			const double tangential = wheel_pos_radius * move_yawrate;					// tangential velocity
 			const double vel_x = move_vel_x + tangential * -sin(wheel_pos_angle);		// tangential is 90 deg rotated (ie. in y direction at phi=0)
 			const double vel_y = move_vel_y + tangential * cos(wheel_pos_angle);
@@ -147,7 +147,7 @@ public:
 
 				// if wheel is not driving fast choose the solution which is closer to outer wheel angle
 				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
-						> M_PI / 2 + (is_alternate ? -1 : 1) * steering_hysteresis)
+						> M_PI / 2 + (is_alternate ? -1 : 1) * steer_hysteresis)
 				{
 					is_alternate = true;
 				} else {
