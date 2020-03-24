@@ -53,6 +53,7 @@ public:
 	double zero_vel_threshold = 0.005;			// [m/s]
 	double small_vel_threshold = 0.05;			// [m/s]
 	double steer_hysteresis = 0.5;				// [rad]
+	double steer_hysteresis_dynamic = 0.1;			// [rad]
 
 	OmniKinematics(int num_wheels_)
 		:	num_wheels(num_wheels_)
@@ -101,27 +102,32 @@ public:
 
 			bool is_alternate = false;
 
+			// check if wheel should be driving fast
+			if(fabs(new_wheel_vel) > (is_fast[i] ? small_vel_threshold : 4 * small_vel_threshold))
+			{
+				const double dist = fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle));
+
+				// choose alternate if new angle is off by more than 90 deg + hysteresis
+				// or if velocity is flipped and new angel is off by more than 90 deg - hysteresis
+				if(dist > M_PI / 2 + steer_hysteresis_dynamic || (new_wheel_vel * wheel.wheel_vel < 0
+						&& dist > M_PI / 2 - steer_hysteresis_dynamic))
+				{
+					is_alternate = true;
+				} else {
+					is_alternate = false;
+				}
+				is_fast[i] = true;
+			}
+			else {
+				is_fast[i] = fabs(wheel.wheel_vel) > (is_fast[i] ? small_vel_threshold : 4 * small_vel_threshold);
+			}
+
 			// check if wheel should be driving
 			if(fabs(new_wheel_vel) > (is_driving[i] ? zero_vel_threshold : 4 * zero_vel_threshold))
 			{
-				// check if wheel is currently driving fast and should continue as such
-				if(fmin(fabs(wheel.wheel_vel), fabs(new_wheel_vel)) > (is_fast[i] ? small_vel_threshold : 4 * small_vel_threshold))
-				{
-					// if wheel is driving fast choose the closest solution in terms of velocity direction
-					if(new_wheel_vel * wheel.wheel_vel < 0) {
-						is_alternate = true;
-					} else {
-						is_alternate = false;
-					}
-					is_fast[i] = true;
-				}
-				else {
-					is_fast[i] = false;
-				}
 				is_driving[i] = true;
 			}
 			else {
-				is_fast[i] = false;
 				is_driving[i] = false;
 			}
 
