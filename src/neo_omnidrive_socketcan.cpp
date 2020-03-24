@@ -264,7 +264,9 @@ public:
 		// check for update timeout
 		if(m_last_update_time < m_last_sync_time)
 		{
-			ROS_WARN_STREAM("Sync update timeout!");
+			if(is_all_homed) {
+				ROS_WARN_STREAM("Sync update timeout!");
+			}
 		}
 
 		// request current motor values
@@ -1188,7 +1190,7 @@ private:
 	bool is_homing_active = false;
 	bool is_steer_reset_active = false;
 	bool is_all_homed = false;
-	bool is_em_stop = true;
+	bool is_em_stop = false;
 	bool is_motor_reset = true;
 
 	uint64_t m_sync_counter = 0;
