@@ -1,6 +1,6 @@
 
 num_wheels: 4
-update_rate: 100
+control_rate: 100
 wheel_radius: 0.088
 wheel_lever_arm: 0.045
 zero_vel_threshold: 0.005

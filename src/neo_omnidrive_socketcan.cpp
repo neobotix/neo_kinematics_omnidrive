@@ -1186,11 +1186,11 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle nh;
 
-	double update_rate = 0;   // [1/s]
-	nh.param("update_rate", update_rate, 50.0);
+	double control_rate = 0;   // [1/s]
+	nh.param("control_rate", control_rate, 50.0);
 
 	// frequency of publishing states (cycle time)
-	ros::Rate rate(update_rate);
+	ros::Rate rate(control_rate);
 
 	NeoSocketCanNode node;
 
