@@ -4,10 +4,10 @@ update_rate: 100
 wheel_radius: 0.088
 wheel_lever_arm: 0.045
 zero_vel_threshold: 0.005
-small_vel_threshold: 0.05
+small_vel_threshold: 0.02
 steer_hysteresis: 30
 steer_gain: 10
-steer_lookahead: 0.05
+steer_lookahead: 0.06
 steer_low_pass: 0.5
 max_steer_vel: 8.0
 broadcast_tf: true
