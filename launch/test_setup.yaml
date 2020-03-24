@@ -7,11 +7,11 @@ steer_gain: 10
 steer_lookahead: 0.05
 steer_low_pass: 0.5
 max_steer_vel: 8.0
+broadcast_tf: true
 
 can_iface: can0
 motor_timeout: 1.0
 home_vel: -1.0
-broadcast_tf: true
 
 drive0:
   can_id: 2

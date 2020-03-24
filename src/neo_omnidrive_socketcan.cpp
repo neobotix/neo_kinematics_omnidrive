@@ -225,7 +225,7 @@ public:
 
 			for(auto& wheel : m_wheels)
 			{
-				motor_set_vel(wheel.drive, 0);		// stop driving
+				wheel.target_wheel_vel = 0;			// stop driving
 				wheel.target_steer_pos = 0;			// set target steering
 
 				if(fabs(angles::normalize_angle(wheel.curr_steer_pos)) > 0.01)
@@ -1169,8 +1169,6 @@ private:
 	uint64_t m_sync_counter = 0;
 	ros::Time m_last_sync_time;
 	ros::Time m_last_update_time;
-
-
 
 	std::thread m_can_thread;
 	std::mutex m_can_mutex;
