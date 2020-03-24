@@ -100,6 +100,7 @@ public:
 		m_node_handle.param("steer_lookahead", m_steer_lookahead, 0.1);
 		m_node_handle.param("steer_low_pass", m_steer_low_pass, 0.5);
 		m_node_handle.param("max_steer_vel", m_max_steer_vel, 10.);
+		m_node_handle.param("motor_delay", m_motor_delay, 0.);
 
 		if(m_num_wheels < 1) {
 			throw std::logic_error("invalid num_wheels param");
@@ -882,16 +883,17 @@ private:
 		if(num_motor_updates >= m_wheels.size() * 2 && m_last_update_time < m_last_sync_time)
 		{
 			const ros::Time now = ros::Time::now();
-			publish_joint_states(now);
-			publish_joint_states_raw(now);
+			const ros::Time timestamp = m_last_sync_time + ros::Duration(m_motor_delay);
+			publish_joint_states(timestamp);
+			publish_joint_states_raw(timestamp);
 			m_last_update_time = now;
 		}
 	}
 
-	void publish_joint_states(ros::Time now)
+	void publish_joint_states(ros::Time timestamp)
 	{
 		sensor_msgs::JointState::Ptr joint_state = boost::make_shared<sensor_msgs::JointState>();
-		joint_state->header.stamp = now;
+		joint_state->header.stamp = timestamp;
 
 		for(auto& wheel : m_wheels)
 		{
@@ -907,10 +909,10 @@ private:
 		m_pub_joint_state.publish(joint_state);
 	}
 
-	void publish_joint_states_raw(ros::Time now)
+	void publish_joint_states_raw(ros::Time timestamp)
 	{
 		sensor_msgs::JointState::Ptr joint_state = boost::make_shared<sensor_msgs::JointState>();
-		joint_state->header.stamp = now;
+		joint_state->header.stamp = timestamp;
 
 		for(auto& wheel : m_wheels)
 		{
@@ -1180,6 +1182,7 @@ private:
 	double m_steer_lookahead = 0;
 	double m_steer_low_pass = 0;
 	double m_max_steer_vel = 0;
+	double m_motor_delay = 0;
 
 	volatile bool do_run = true;
 	bool is_homing_active = false;
