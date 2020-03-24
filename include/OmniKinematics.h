@@ -102,10 +102,10 @@ public:
 			bool is_alternate = false;
 
 			// check if wheel should be driving
-			if(fabs(new_wheel_vel) > (is_driving[i] ? zero_vel_threshold : 2 * zero_vel_threshold))
+			if(fabs(new_wheel_vel) > (is_driving[i] ? zero_vel_threshold : 4 * zero_vel_threshold))
 			{
 				// check if wheel is currently driving fast and should continue as such
-				if(fmin(fabs(wheel.wheel_vel), fabs(new_wheel_vel)) > (is_fast[i] ? small_vel_threshold : 2 * small_vel_threshold))
+				if(fmin(fabs(wheel.wheel_vel), fabs(new_wheel_vel)) > (is_fast[i] ? small_vel_threshold : 4 * small_vel_threshold))
 				{
 					// if wheel is driving fast choose the closest solution in terms of velocity direction
 					if(new_wheel_vel * wheel.wheel_vel < 0) {
