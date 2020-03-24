@@ -14,7 +14,9 @@ motor_delay: 0.0
 broadcast_tf: true
 
 can_iface: can0
-motor_timeout: 1.0
+motor_timeout: 0.2
+cmd_timeout: 0.2
+trajectory_timeout: 0.1
 home_vel: -1.0
 
 drive0:

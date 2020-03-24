@@ -103,6 +103,7 @@ public:
 		m_node_handle.param("steer_low_pass", m_steer_low_pass, 0.5);
 		m_node_handle.param("max_steer_vel", m_max_steer_vel, 10.);
 		m_node_handle.param("motor_delay", m_motor_delay, 0.);
+		m_node_handle.param("trajectory_timeout", m_trajectory_timeout, 0.1);
 		m_node_handle.param("measure_torque", m_measure_torque, false);
 
 		if(m_num_wheels < 1) {
@@ -252,8 +253,24 @@ public:
 		// steering and motion control
 		if(is_all_homed && all_motors_operational())
 		{
+			// check for input timeout
+			if((now - m_last_trajectory_time).toSec() > m_trajectory_timeout)
+			{
+				if(!is_trajectory_timeout && !m_last_trajectory_time.isZero()) {
+					ROS_WARN_STREAM("joint_trajectory input timeout! Stopping now.");
+				}
+				is_trajectory_timeout = true;
+			}
+			else {
+				is_trajectory_timeout = false;
+			}
+
 			for(auto& wheel : m_wheels)
 			{
+				if(is_trajectory_timeout) {
+					wheel.target_wheel_vel = 0;		// stop when input timed out
+				}
+
 				const double future_steer_pos = wheel.curr_steer_pos + wheel.curr_steer_vel * m_steer_lookahead;
 				const double delta_rad = angles::shortest_angular_distance(wheel.target_steer_pos, future_steer_pos);
 				const double control_vel = -1 * delta_rad * m_steer_gain;
@@ -469,6 +486,7 @@ private:
 			m_wheels[i].target_wheel_vel = wheel_vel[i];
 			m_wheels[i].target_steer_pos = wheel_angle[i] - m_wheels[i].home_angle;
 		}
+		m_last_trajectory_time = ros::Time::now();
 	}
 
 	void emergency_stop_callback(const neo_msgs::EmergencyStopState::ConstPtr& state)
@@ -1213,6 +1231,7 @@ private:
 	double m_steer_low_pass = 0;
 	double m_max_steer_vel = 0;
 	double m_motor_delay = 0;
+	double m_trajectory_timeout = 0;
 	bool m_measure_torque = false;
 
 	volatile bool do_run = true;
@@ -1221,10 +1240,12 @@ private:
 	bool is_all_homed = false;
 	bool is_em_stop = false;
 	bool is_motor_reset = true;
+	bool is_trajectory_timeout = false;
 
 	uint64_t m_sync_counter = 0;
 	ros::Time m_last_sync_time;
 	ros::Time m_last_update_time;
+	ros::Time m_last_trajectory_time;
 
 	std::thread m_can_thread;
 	std::mutex m_can_mutex;
