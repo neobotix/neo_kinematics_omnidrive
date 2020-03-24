@@ -151,6 +151,7 @@ public:
 		}
 
 		m_pub_joint_state = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states", 1);
+		m_pub_joint_state_raw = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states_raw", 1);
 
 		m_sub_joint_trajectory = m_node_handle.subscribe("/drives/joint_trajectory", 1, &NeoSocketCanNode::joint_trajectory_callback, this);
 		m_sub_emergency_stop = m_node_handle.subscribe("emergency_stop_state", 1, &NeoSocketCanNode::emergency_stop_callback, this);
@@ -882,6 +883,7 @@ private:
 		{
 			const ros::Time now = ros::Time::now();
 			publish_joint_states(now);
+			publish_joint_states_raw(now);
 			m_last_update_time = now;
 		}
 	}
@@ -903,6 +905,25 @@ private:
 			joint_state->effort.push_back(0);
 		}
 		m_pub_joint_state.publish(joint_state);
+	}
+
+	void publish_joint_states_raw(ros::Time now)
+	{
+		sensor_msgs::JointState::Ptr joint_state = boost::make_shared<sensor_msgs::JointState>();
+		joint_state->header.stamp = now;
+
+		for(auto& wheel : m_wheels)
+		{
+			joint_state->name.push_back(wheel.drive.joint_name);
+			joint_state->name.push_back(wheel.steer.joint_name);
+			joint_state->position.push_back(wheel.drive.curr_enc_pos_inc);
+			joint_state->position.push_back(wheel.steer.curr_enc_pos_inc);
+			joint_state->velocity.push_back(wheel.drive.curr_enc_vel_inc_s);
+			joint_state->velocity.push_back(wheel.steer.curr_enc_vel_inc_s);
+			joint_state->effort.push_back(0);
+			joint_state->effort.push_back(0);
+		}
+		m_pub_joint_state_raw.publish(joint_state);
 	}
 
 	double calc_wheel_pos(motor_t& motor) const
@@ -1144,6 +1165,7 @@ private:
 	ros::NodeHandle m_node_handle;
 
 	ros::Publisher m_pub_joint_state;
+	ros::Publisher m_pub_joint_state_raw;
 
 	ros::Subscriber m_sub_joint_trajectory;
 	ros::Subscriber m_sub_emergency_stop;
