@@ -151,8 +151,8 @@ public:
 			if(!m_node_handle.getParam("steer" + std::to_string(i) + "/enc_home_offset", m_wheels[i].steer.enc_home_offset)) {
 				throw std::logic_error("enc_home_offset param missing for steering motor" + std::to_string(i));
 			}
-			m_node_handle.param("drive" + std::to_string(i) + "/torque_constant", m_wheels[i].drive.torque_constant);
-			m_node_handle.param("steer" + std::to_string(i) + "/torque_constant", m_wheels[i].steer.torque_constant);
+			m_node_handle.param("drive" + std::to_string(i) + "/torque_constant", m_wheels[i].drive.torque_constant, 0.);
+			m_node_handle.param("steer" + std::to_string(i) + "/torque_constant", m_wheels[i].steer.torque_constant, 0.);
 
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
