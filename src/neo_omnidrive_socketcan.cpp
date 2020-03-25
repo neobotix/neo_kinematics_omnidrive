@@ -91,12 +91,17 @@ public:
 
 	NeoSocketCanNode()
 	{
+		if(!m_node_handle.getParam("control_rate", m_control_rate)) {
+			throw std::logic_error("missing control_rate param");
+		}
 		if(!m_node_handle.getParam("num_wheels", m_num_wheels)) {
 			throw std::logic_error("missing num_wheels param");
 		}
 		if(!m_node_handle.getParam("can_iface", m_can_iface)) {
 			throw std::logic_error("missing can_iface param");
 		}
+		m_node_handle.param("request_status_divider", m_request_status_divider, 10);
+		m_node_handle.param("heartbeat_divider", m_heartbeat_divider, 10);
 		m_node_handle.param("motor_group_id", m_motor_group_id, -1);
 		m_node_handle.param("motor_timeout", m_motor_timeout, 1.);
 		m_node_handle.param("home_vel", m_home_vel, -1.);
@@ -324,9 +329,19 @@ public:
 			}
 		}
 
-		if(m_sync_counter % 10 == 0)
+		// check if we need to request status
+		if((m_sync_counter + 0) % m_request_status_divider == 0)
 		{
 			request_status_all();		// request status update
+		}
+
+		// check if we need to send a heartbeat
+		if((m_sync_counter + 1) % m_heartbeat_divider == 0)
+		{
+			can_msg_t msg;				// send heartbeat message
+			msg.id  = 0x700;
+			msg.length = 5;
+			can_transmit(msg);
 		}
 	}
 
@@ -623,6 +638,14 @@ private:
 	{
 		stop_motion();
 
+		// activate watchdog
+		for(auto& wheel : m_wheels)
+		{
+			configure_watchdog(wheel.drive);
+			configure_watchdog(wheel.steer);
+		}
+		can_sync();
+
 		is_all_homed = true;
 		is_homing_active = false;
 		is_steer_reset_active = true;
@@ -655,6 +678,28 @@ private:
 
 		// activate mapped objects
 		canopen_SDO_download(motor, 0x1A00, 0, 2);
+
+		can_sync();
+	}
+
+	void configure_watchdog(const motor_t& motor)
+	{
+		const int heartbeat_time_ms = 1000 * m_heartbeat_divider / m_control_rate;
+		const int pc_node_id = 0x00;
+
+		// consumer (PC) heartbeat time
+		canopen_SDO_download(motor, 0x1016, 1, (pc_node_id << 16) | heartbeat_time_ms);
+
+		// error behavior after failure: 0=pre-operational, 1=no state change, 2=stopped"
+		canopen_SDO_download(motor, 0x1029, 1, 2);
+
+		// motor behavior after heartbeat failure: "quick stop"
+		canopen_SDO_download(motor, 0x6007, 0, 3);
+
+		// activate emergency events: "heartbeat event"
+		// Object 0x2F21 = "Emergency Events" which cause an Emergency Message
+		// Bit 3 is responsible for Heartbeart-Failure.--> Hex 0x08
+		canopen_SDO_download(motor, 0x2F21, 0, 0x08);
 
 		can_sync();
 	}
@@ -1281,6 +1326,9 @@ private:
 
 	std::string m_can_iface;
 	int m_motor_group_id = -1;
+	int m_request_status_divider = 0;
+	int m_heartbeat_divider = 0;
+	double m_control_rate = 0;
 	double m_motor_timeout = 0;
 	double m_home_vel = 0;
 	double m_steer_gain = 0;
