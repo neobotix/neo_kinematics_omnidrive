@@ -103,6 +103,7 @@ public:
 		m_node_handle.param("steer_hysteresis", m_kinematics->steer_hysteresis, 30.0);
 		m_node_handle.param("steer_hysteresis_dynamic", m_kinematics->steer_hysteresis_dynamic, 5.0);
 		m_kinematics->steer_hysteresis = M_PI * m_kinematics->steer_hysteresis / 180;
+		m_kinematics->steer_hysteresis_dynamic = M_PI * m_kinematics->steer_hysteresis_dynamic / 180;
 		m_kinematics->initialize(m_wheels);
 	}
 
