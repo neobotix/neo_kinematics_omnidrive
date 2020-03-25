@@ -74,6 +74,7 @@ public:
 
 		double target_wheel_vel = 0;			// current wheel velocity target in rad/s
 		double target_steer_pos = 0;			// current steering target angle in rad
+		double control_wheel_vel = 0;			// last commanded wheel velocity in rad/s
 		double control_steer_vel = 0;			// last commanded steering velocity in rad/s
 		double curr_wheel_pos = 0;				// current wheel angle in rad
 		double curr_wheel_vel = 0;				// current wheel velocity in rad/s
@@ -102,6 +103,7 @@ public:
 		m_node_handle.param("steer_lookahead", m_steer_lookahead, 0.1);
 		m_node_handle.param("steer_low_pass", m_steer_low_pass, 0.5);
 		m_node_handle.param("max_steer_vel", m_max_steer_vel, 10.);
+		m_node_handle.param("drive_low_pass", m_drive_low_pass, 0.5);
 		m_node_handle.param("motor_delay", m_motor_delay, 0.);
 		m_node_handle.param("trajectory_timeout", m_trajectory_timeout, 0.1);
 		m_node_handle.param("measure_torque", m_measure_torque, false);
@@ -274,11 +276,12 @@ public:
 				const double future_steer_pos = wheel.curr_steer_pos + wheel.curr_steer_vel * m_steer_lookahead;
 				const double delta_rad = angles::shortest_angular_distance(wheel.target_steer_pos, future_steer_pos);
 				const double control_vel = -1 * delta_rad * m_steer_gain;
-				const double smooth_control_vel = control_vel * m_steer_low_pass + wheel.control_steer_vel * (1 - m_steer_low_pass);
-				wheel.control_steer_vel = smooth_control_vel;
 
-				motor_set_vel(wheel.drive, wheel.target_wheel_vel);
-				motor_set_vel(wheel.steer, fmin(fmax(smooth_control_vel, -m_max_steer_vel), m_max_steer_vel));
+				wheel.control_wheel_vel = wheel.target_wheel_vel * m_drive_low_pass + wheel.control_wheel_vel * (1 - m_drive_low_pass);
+				wheel.control_steer_vel = control_vel * m_steer_low_pass + wheel.control_steer_vel * (1 - m_steer_low_pass);
+
+				motor_set_vel(wheel.drive, wheel.control_wheel_vel);
+				motor_set_vel(wheel.steer, fmin(fmax(wheel.control_steer_vel, -m_max_steer_vel), m_max_steer_vel));
 			}
 			can_sync();
 			begin_motion();
@@ -1230,6 +1233,7 @@ private:
 	double m_steer_lookahead = 0;
 	double m_steer_low_pass = 0;
 	double m_max_steer_vel = 0;
+	double m_drive_low_pass = 0;
 	double m_motor_delay = 0;
 	double m_trajectory_timeout = 0;
 	bool m_measure_torque = false;
