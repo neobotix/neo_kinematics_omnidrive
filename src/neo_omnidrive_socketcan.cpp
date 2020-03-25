@@ -109,6 +109,11 @@ public:
 		m_node_handle.param("trajectory_timeout", m_trajectory_timeout, 0.1);
 		m_node_handle.param("measure_torque", m_measure_torque, false);
 
+		if(m_motor_group_id >= 0) {
+			ROS_INFO_STREAM("Using motors GroupID: " << m_motor_group_id);
+			m_motor_group_id += 0x300;
+		}
+
 		if(m_num_wheels < 1) {
 			throw std::logic_error("invalid num_wheels param");
 		}
