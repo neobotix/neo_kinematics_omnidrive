@@ -381,6 +381,14 @@ public:
 
 		stop_motion();
 
+		// disable watchdog
+		for(auto& wheel : m_wheels)
+		{
+			disable_watchdog(wheel.drive);
+			disable_watchdog(wheel.steer);
+		}
+		can_sync();
+
 		// set modulo to one wheel revolution (to preserve absolute position for homed motors)
 		for(auto& wheel : m_wheels)
 		{
@@ -700,6 +708,22 @@ private:
 		// Object 0x2F21 = "Emergency Events" which cause an Emergency Message
 		// Bit 3 is responsible for Heartbeart-Failure.--> Hex 0x08
 		canopen_SDO_download(motor, 0x2F21, 0, 0x08);
+
+		can_sync();
+	}
+
+	void disable_watchdog(const motor_t& motor)
+	{
+		// Motor action after Hearbeat-Error: No Action
+		canopen_SDO_download(motor, 0x6007, 0, 0);
+
+		// Error Behavior: No state change
+		canopen_SDO_download(motor, 0x1029, 1, 1);
+
+		// Deacivate emergency events: "heartbeat event"
+		// Object 0x2F21 = "Emergency Events" which cause an Emergency Message
+		// Bit 3 is responsible for Heartbeart-Failure.
+		canopen_SDO_download(motor, 0x2F21, 0, 0x00);
 
 		can_sync();
 	}
