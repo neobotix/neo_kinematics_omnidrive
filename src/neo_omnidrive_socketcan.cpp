@@ -317,6 +317,7 @@ public:
 		m_last_sync_time = ros::Time::now();
 		m_sync_counter++;
 
+		// measure torque if enabled
 		if(m_measure_torque)
 		{
 			if(m_motor_group_id >= 0) {
@@ -424,8 +425,8 @@ public:
 
 		// ---------- set PDO mapping
 		// Mapping of TPDO1:
-		// - position
-		// - velocity
+		// - position (byte 0 to 3)
+		// - velocity (byte 4 to 7)
 		for(auto& wheel : m_wheels)
 		{
 			configure_PDO_mapping(wheel.drive);
