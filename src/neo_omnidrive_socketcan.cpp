@@ -692,7 +692,8 @@ private:
 
 	void configure_watchdog(const motor_t& motor)
 	{
-		const int heartbeat_time_ms = 1000 * m_heartbeat_divider / m_control_rate;
+		// configure to fail after missing 3 heartbeats
+		const int heartbeat_time_ms = 4 * 1000 * m_heartbeat_divider / m_control_rate;
 		const int pc_node_id = 0x00;
 
 		// consumer (PC) heartbeat time
