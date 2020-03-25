@@ -110,7 +110,7 @@ public:
 		m_node_handle.param("measure_torque", m_measure_torque, false);
 
 		if(m_motor_group_id >= 0) {
-			ROS_INFO_STREAM("Using motors GroupID: " << m_motor_group_id);
+			ROS_INFO_STREAM("Using motors group id: " << m_motor_group_id);
 			m_motor_group_id += 0x300;
 		}
 
@@ -314,9 +314,13 @@ public:
 
 		if(m_measure_torque)
 		{
-			for(auto& wheel : m_wheels)
-			{
-				canopen_query(wheel.drive, 'I', 'Q', 0);	// query motor current
+			if(m_motor_group_id >= 0) {
+				canopen_query(m_motor_group_id, 'I', 'Q', 0);	// query motor current
+			}
+			else {
+				for(auto& wheel : m_wheels) {
+					canopen_query(wheel.drive, 'I', 'Q', 0);	// query motor current
+				}
 			}
 		}
 
