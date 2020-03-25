@@ -97,6 +97,7 @@ public:
 		if(!m_node_handle.getParam("can_iface", m_can_iface)) {
 			throw std::logic_error("missing can_iface param");
 		}
+		m_node_handle.param("motor_group_id", m_motor_group_id, -1);
 		m_node_handle.param("motor_timeout", m_motor_timeout, 1.);
 		m_node_handle.param("home_vel", m_home_vel, -1.);
 		m_node_handle.param("steer_gain", m_steer_gain, 1.);
@@ -671,12 +672,22 @@ private:
 
 	void request_status_all()
 	{
-		for(auto& wheel : m_wheels)
+		if(m_motor_group_id >= 0)
 		{
-			request_status(wheel.drive);
-			request_status(wheel.steer);
+			canopen_query(m_motor_group_id, 'S', 'R', 0);
+
+			for(auto& wheel : m_wheels) {
+				wheel.drive.request_send_time = ros::Time::now();
+				wheel.steer.request_send_time = ros::Time::now();
+			}
 		}
-		can_sync();
+		else {
+			for(auto& wheel : m_wheels) {
+				request_status(wheel.drive);
+				request_status(wheel.steer);
+			}
+			can_sync();
+		}
 	}
 
 	void motor_on(motor_t& motor)
@@ -692,23 +703,36 @@ private:
 
 	void all_motors_on()
 	{
-		for(auto& wheel : m_wheels)
-		{
-			motor_on(wheel.drive);
-			motor_on(wheel.steer);
+		if(m_motor_group_id >= 0) {
+			canopen_set_int(m_motor_group_id, 'M', 'O', 0, 1);
 		}
-		can_sync();
+		else {
+			for(auto& wheel : m_wheels) {
+				motor_on(wheel.drive);
+				motor_on(wheel.steer);
+			}
+			can_sync();
+		}
 	}
 
 	void all_motors_off()
 	{
-		for(auto& wheel : m_wheels)
+		if(m_motor_group_id >= 0)
 		{
-			motor_off(wheel.drive);
-			motor_off(wheel.steer);
-		}
-		can_sync();
+			canopen_set_int(m_motor_group_id, 'M', 'O', 0, 0);
 
+			for(auto& wheel : m_wheels) {
+				wheel.drive.state = ST_PRE_INITIALIZED;
+				wheel.steer.state = ST_PRE_INITIALIZED;
+			}
+		}
+		else {
+			for(auto& wheel : m_wheels) {
+				motor_off(wheel.drive);
+				motor_off(wheel.steer);
+			}
+			can_sync();
+		}
 		is_motor_reset = true;
 	}
 
@@ -751,22 +775,32 @@ private:
 
 	void begin_motion()
 	{
-		for(const auto& wheel : m_wheels)
-		{
-			canopen_query(wheel.drive, 'B', 'G', 0);
-			canopen_query(wheel.steer, 'B', 'G', 0);
+		if(m_motor_group_id >= 0) {
+			canopen_query(m_motor_group_id, 'B', 'G', 0);
 		}
-		can_sync();
+		else {
+			for(const auto& wheel : m_wheels)
+			{
+				canopen_query(wheel.drive, 'B', 'G', 0);
+				canopen_query(wheel.steer, 'B', 'G', 0);
+			}
+			can_sync();
+		}
 	}
 
 	void stop_motion()
 	{
-		for(const auto& wheel : m_wheels)
-		{
-			canopen_query(wheel.drive, 'S', 'T', 0);
-			canopen_query(wheel.steer, 'S', 'T', 0);
+		if(m_motor_group_id >= 0) {
+			canopen_query(m_motor_group_id, 'S', 'T', 0);
 		}
-		can_sync();
+		else {
+			for(const auto& wheel : m_wheels)
+			{
+				canopen_query(wheel.drive, 'S', 'T', 0);
+				canopen_query(wheel.steer, 'S', 'T', 0);
+			}
+			can_sync();
+		}
 	}
 
 	void motor_set_vel(const motor_t& motor, double rot_vel_rad_s)
@@ -788,8 +822,13 @@ private:
 
 	void canopen_query(const motor_t& motor, char cmd_char_1, char cmd_char_2, int32_t index)
 	{
+		canopen_query(motor.can_Rx_PDO2, cmd_char_1, cmd_char_2, index);
+	}
+
+	void canopen_query(int id, char cmd_char_1, char cmd_char_2, int32_t index)
+	{
 		can_msg_t msg;
-		msg.id = motor.can_Rx_PDO2;
+		msg.id = id;
 		msg.length = 4;
 		msg.data[0] = cmd_char_1;
 		msg.data[1] = cmd_char_2;
@@ -800,8 +839,13 @@ private:
 
 	void canopen_set_int(const motor_t& motor, char cmd_char_1, char cmd_char_2, int32_t index, int32_t data)
 	{
+		canopen_set_int(motor.can_Rx_PDO2, cmd_char_1, cmd_char_2, index, data);
+	}
+
+	void canopen_set_int(int id, char cmd_char_1, char cmd_char_2, int32_t index, int32_t data)
+	{
 		can_msg_t msg;
-		msg.id = motor.can_Rx_PDO2;
+		msg.id = id;
 		msg.length = 8;
 		msg.data[0] = cmd_char_1;
 		msg.data[1] = cmd_char_2;
@@ -1227,6 +1271,7 @@ private:
 	std::vector<module_t> m_wheels;
 
 	std::string m_can_iface;
+	int m_motor_group_id = -1;
 	double m_motor_timeout = 0;
 	double m_home_vel = 0;
 	double m_steer_gain = 0;
