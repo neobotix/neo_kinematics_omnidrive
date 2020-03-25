@@ -116,7 +116,9 @@ public:
 		// check for input timeout
 		if((now - m_last_cmd_time).toSec() > m_cmd_timeout)
 		{
-			if(!is_cmd_timeout && !m_last_cmd_time.isZero()) {
+			if(!is_cmd_timeout && !m_last_cmd_time.isZero()
+				&& (m_last_cmd_vel.linear.x != 0 || m_last_cmd_vel.linear.y != 0 || m_last_cmd_vel.angular.z != 0))
+			{
 				ROS_WARN_STREAM("cmd_vel input timeout! Stopping now.");
 			}
 			// reset values to zero
