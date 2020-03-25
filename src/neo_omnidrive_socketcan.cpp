@@ -237,7 +237,8 @@ public:
 		}
 
 		// check if we should start homing
-		if(!is_all_homed && !is_homing_active && all_motors_operational())
+		if(!is_all_homed && !is_homing_active && all_motors_operational()
+			&& m_sync_counter > 100)
 		{
 			ROS_INFO_STREAM("Start homing procedure ...");
 			start_homing();
