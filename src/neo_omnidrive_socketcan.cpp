@@ -330,13 +330,22 @@ public:
 		}
 
 		// check if we need to request status
-		if((m_sync_counter + 0) % m_request_status_divider == 0)
 		{
-			request_status_all();		// request status update
+			int i = 0;
+			for(auto& wheel : m_wheels)
+			{
+				if((m_sync_counter + i + 0) % m_request_status_divider == 0) {
+					request_status(wheel.drive);		// request status update
+				}
+				if((m_sync_counter + i + 1) % m_request_status_divider == 0) {
+					request_status(wheel.steer);		// request status update
+				}
+				i += 2;
+			}
 		}
 
 		// check if we need to send a heartbeat
-		if((m_sync_counter + 1) % m_heartbeat_divider == 0)
+		if((m_sync_counter + 2 * m_num_wheels) % m_heartbeat_divider == 0)
 		{
 			can_msg_t msg;				// send heartbeat message
 			msg.id  = 0x700;
