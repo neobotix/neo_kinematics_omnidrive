@@ -88,7 +88,7 @@ public:
 		ros::Time request_send_time;			// time of last status update request
 		ros::Time status_recv_time;				// time of last status update received
 		ros::Time update_recv_time;				// time of last sync update received
-		int homing_state = -1;					// current homing state (-1 = unknown, 0 = active, 1 = finished)
+		int homing_state = -1;					// current homing state (-1 = unknown, 0 = active, 1 = finished, 2 = done)
 	};
 
 	struct module_t
@@ -636,7 +636,7 @@ private:
 			// choose the action that the controller shall perform after the homing event occurred
 			// HM[4] = 0 : after Event stop immediately
 			// HM[4] = 2 : do nothing
-			canopen_set_int(wheel.steer, 'H', 'M', 4, 0);
+			canopen_set_int(wheel.steer, 'H', 'M', 4, 2);
 			can_sync();
 
 			// choose the setting of the position counter (i.e. to the value defined in 2.a) after the homing event occured
@@ -655,25 +655,35 @@ private:
 
 		begin_motion();
 
-		::usleep(500 * 1000);		// get the wheels moving first
+		::usleep(100 * 1000);		// get the wheels moving first
 
 		// arm homing
 		for(auto& wheel : m_wheels)
 		{
-			canopen_set_int(wheel.steer, 'H', 'M', 1, 1);
+			wheel.steer.homing_state = -1;		// reset state
 
-			wheel.steer.homing_state = -1;		// reset switch state
+			canopen_set_int(wheel.steer, 'H', 'M', 1, 1);
 		}
 		can_sync();
 
 		is_homing_active = true;
 	}
 
-	bool check_homing_done() const
+	bool check_homing_done()
 	{
+		// check if we can stop wheels
 		for(auto& wheel : m_wheels)
 		{
-			if(wheel.steer.homing_state != 1) {
+			if(wheel.steer.homing_state == 1)
+			{
+				stop_motion(wheel.steer);			// stop when finished homeing
+				wheel.steer.homing_state = 2;
+			}
+		}
+		// check if all done
+		for(auto& wheel : m_wheels)
+		{
+			if(wheel.steer.homing_state != 2) {
 				return false;
 			}
 		}
@@ -905,6 +915,11 @@ private:
 		}
 	}
 
+	void stop_motion(const motor_t& motor)
+	{
+		canopen_query(motor, 'S', 'T', 0);
+	}
+
 	void stop_motion()
 	{
 		if(m_motor_group_id >= 0) {
@@ -913,8 +928,8 @@ private:
 		else {
 			for(const auto& wheel : m_wheels)
 			{
-				canopen_query(wheel.drive, 'S', 'T', 0);
-				canopen_query(wheel.steer, 'S', 'T', 0);
+				stop_motion(wheel.drive);
+				stop_motion(wheel.steer);
 			}
 			can_sync();
 		}
@@ -1182,7 +1197,13 @@ private:
 		}
 		if(msg.data[0] == 'H' && msg.data[1] == 'M')
 		{
-			motor.homing_state = (msg.data[4] == 0 ? 1 : 0);
+			if(msg.data[4] == 0) {
+				if(motor.homing_state == 0) {
+					motor.homing_state = 1;		// only go to finish after active
+				}
+			} else {
+				motor.homing_state = 0;			// homing active
+			}
 		}
 		if(msg.data[0] == 'I' && msg.data[1] == 'Q')
 		{
