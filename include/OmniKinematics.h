@@ -111,57 +111,32 @@ public:
 				new_wheel_angle = last_stop_angle[i];			// keep last known angle
 			}
 
-			// compute distance to current angle
-			const double angle_dist = fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle));
-
 			// check if wheel is or should be driving fast
 			is_fast[i] = fmax(fabs(new_wheel_vel), fabs(wheel.wheel_vel))
 									> (is_fast[i] ? small_vel_threshold : 2 * small_vel_threshold);
 
 			// first choose the solution which is closest to current angle
-			if(angle_dist > M_PI / 2 + (is_alternate[i] ? -1 : 1) * steer_hysteresis_dynamic)
+			if(fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle))
+					> M_PI / 2 + (is_alternate[i] ? -1 : 1) * steer_hysteresis_dynamic)
 			{
-				is_alternate[i] = true;
-			} else {
-				is_alternate[i] = false;
+				new_wheel_angle = angles::normalize_angle(new_wheel_angle + M_PI);
+				new_wheel_vel = -1 * new_wheel_vel;
 			}
 
-			if(!is_fast[i])
+			if(!is_fast[i] && (switching_wheel < 0 || i == switching_wheel))
 			{
 				// compute outer steering angle
 				const double center_pos_angle = ::atan2(wheel.center_pos_y, wheel.center_pos_x);
 				const double outer_wheel_angle = angles::normalize_angle(center_pos_angle - M_PI / 2);
 
-				bool do_switch = false;
-
 				// if wheel is not driving fast choose the solution which is closer to outer wheel angle
 				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
 						> M_PI / 2 + steer_hysteresis)
 				{
-					do_switch = !is_alternate[i];
-				} else {
-					do_switch = is_alternate[i];
+					new_wheel_angle = angles::normalize_angle(new_wheel_angle + M_PI);
+					new_wheel_vel = -1 * new_wheel_vel;
+					switching_wheel = i;		// we are switching
 				}
-
-				// only switch one wheel at a time
-				if(do_switch)
-				{
-					if(switching_wheel >= 0 && i != switching_wheel) {
-						do_switch = false;			// another wheel is switching already
-					} else {
-						switching_wheel = i;		// we are switching now
-					}
-				}
-
-				if(do_switch) {
-					is_alternate[i] = !is_alternate[i];		// execute switch
-				}
-			}
-
-			if(is_alternate[i])
-			{
-				new_wheel_angle = angles::normalize_angle(new_wheel_angle + M_PI);
-				new_wheel_vel = -1 * new_wheel_vel;
 			}
 
 			// check if we are done switching
