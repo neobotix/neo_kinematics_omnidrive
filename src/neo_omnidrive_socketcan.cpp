@@ -89,7 +89,8 @@ public:
 		ros::Time request_send_time;			// time of last status update request
 		ros::Time status_recv_time;				// time of last status update received
 		ros::Time update_recv_time;				// time of last sync update received
-		int homing_state = -1;					// current homing state (-1 = unknown, 0 = active, 1 = finished, 2 = done)
+		ros::Time homing_start_time;			// time of homing start
+		int homing_state = -1;					// current homing state (-2 = restart, -1 = unknown, 0 = active, 1 = finished, 2 = done)
 	};
 
 	struct module_t
@@ -673,14 +674,10 @@ private:
 
 		begin_motion();
 
-		::usleep(500 * 1000);		// get the wheels moving first
-
 		// arm homing
 		for(auto& wheel : m_wheels)
 		{
-			wheel.steer.homing_state = -1;		// reset state
-
-			canopen_set_int(wheel.steer, 'H', 'M', 1, 1);
+			arm_homing(wheel.steer);
 		}
 		can_sync();
 
@@ -688,17 +685,42 @@ private:
 		is_homing_active = true;
 	}
 
+	void arm_homing(motor_t& motor)
+	{
+		motor.homing_state = -1;		// reset state
+		motor.homing_start_time = ros::Time::now();
+
+		canopen_set_int(motor, 'H', 'M', 1, 1);		// arm homeing
+	}
+
 	bool check_homing_done()
 	{
-		// check if we can stop wheels
+		const ros::Time now = ros::Time::now();
+
 		for(auto& wheel : m_wheels)
 		{
+			// check if we can stop wheels
 			if(wheel.steer.homing_state == 1)
 			{
 				stop_motion(wheel.steer);			// stop when finished homeing
 				wheel.steer.homing_state = 2;
 			}
+
+			// check for restart
+			if(wheel.steer.homing_state == -2)
+			{
+				arm_homing(wheel.steer);
+			}
+
+			// check for timeout
+			if((now - wheel.steer.homing_start_time).toSec() > 10)
+			{
+				ROS_WARN_STREAM("Homeing timeout on motor " << wheel.steer.joint_name << ", restarting ...");				
+
+				arm_homing(wheel.steer);
+			}
 		}
+
 		// check if all done
 		for(auto& wheel : m_wheels)
 		{
@@ -1226,12 +1248,25 @@ private:
 		}
 		if(msg.data[0] == 'H' && msg.data[1] == 'M')
 		{
-			if(msg.data[4] == 0) {
-				if(motor.homing_state == 0) {
-					motor.homing_state = 1;		// only go to finish after active
+			if(msg.data[4] == 0)					// check if motor says homing finished
+			{
+				if(motor.homing_state == 0)
+				{
+					if((ros::Time::now() - motor.homing_start_time).toSec() > 0.5)
+					{
+						motor.homing_state = 1;		// only go to finish after active for some time
+					}
+					else {
+						motor.homing_state = -2;	// restart, since it finished too soon
+					}
 				}
-			} else {
-				motor.homing_state = 0;			// homing active
+				else if(motor.homing_state == -1)
+				{
+					motor.homing_state = -2;		// restart, since it was never active
+				}
+			}
+			else {
+				motor.homing_state = 0;				// homing active
 			}
 		}
 		if(msg.data[0] == 'I' && msg.data[1] == 'Q')
