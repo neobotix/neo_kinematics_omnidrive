@@ -114,7 +114,11 @@ public:
 				new_wheel_angle = last_stop_angle[i];			// keep last known angle
 			}
 
-			// first choose closest to current
+			// check if wheel is or should be driving fast
+			is_fast[i] = fmax(fabs(new_wheel_vel), fabs(wheel.wheel_vel))
+									> (is_fast[i] ? small_vel_threshold : 2 * small_vel_threshold);
+
+			// first choose the solution which is closest to current angle
 			if(angle_dist > M_PI / 2 + (is_alternate[i] ? -1 : 1) * steer_hysteresis_dynamic)
 			{
 				is_alternate[i] = true;
@@ -122,22 +126,17 @@ public:
 				is_alternate[i] = false;
 			}
 
-			// check if wheel should be driving fast
-			if(fabs(new_wheel_vel) > (is_fast[i] ? small_vel_threshold : 2 * small_vel_threshold))
+			// check for special condition where we have two choices and we are driving fast
+			if(is_fast[i] && fabs(new_wheel_vel) > small_vel_threshold && fabs(wheel.wheel_vel) > small_vel_threshold)
 			{
 				// choose alternate if velocity is flipped and new angle is off by more than 90 deg - hysteresis
-				if(fabs(wheel.wheel_vel) > small_vel_threshold
-							&& new_wheel_vel * wheel.wheel_vel < 0
-							&& angle_dist > M_PI / 2 - steer_hysteresis_dynamic)
+				// (this is an optional optimization)
+				if(new_wheel_vel * wheel.wheel_vel < 0 && angle_dist > M_PI / 2 - steer_hysteresis_dynamic)
 				{
 					is_alternate[i] = true;
 				} else {
 					is_alternate[i] = false;
 				}
-				is_fast[i] = true;
-			}
-			else {
-				is_fast[i] = fabs(wheel.wheel_vel) > (is_fast[i] ? small_vel_threshold : 2 * small_vel_threshold);
 			}
 
 			if(!is_fast[i])
@@ -146,14 +145,29 @@ public:
 				const double center_pos_angle = ::atan2(wheel.center_pos_y, wheel.center_pos_x);
 				const double outer_wheel_angle = angles::normalize_angle(center_pos_angle - M_PI / 2);
 
+				bool do_switch = false;
+
 				// if wheel is not driving fast choose the solution which is closer to outer wheel angle
 				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
 						> M_PI / 2 + steer_hysteresis)
 				{
-					is_alternate[i] = true;
+					do_switch = !is_alternate[i];
 				} else {
-					is_alternate[i] = false;
+					do_switch = is_alternate[i];
+				}
 
+				// only switch one wheel at a time
+				if(do_switch)
+				{
+					if(switching_wheel >= 0 && i != switching_wheel) {
+						do_switch = false;			// another wheel is switching already
+					} else {
+						switching_wheel = i;		// we are switching now
+					}
+				}
+
+				if(do_switch) {
+					is_alternate[i] = !is_alternate[i];		// execute switch
 				}
 			}
 
@@ -161,6 +175,15 @@ public:
 			{
 				new_wheel_angle = angles::normalize_angle(new_wheel_angle + M_PI);
 				new_wheel_vel = -1 * new_wheel_vel;
+			}
+
+			// check if we are done switching
+			if(switching_wheel == i)
+			{
+				if(fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle)) < M_PI / 8)
+				{
+					switching_wheel = -1;		// done switching
+				}
 			}
 
 			// store new values
@@ -174,6 +197,7 @@ public:
 
 private:
 	int num_wheels = 0;
+	int switching_wheel = -1;		// which wheel is switching to outer position right now
 
 	std::vector<bool> is_driving;
 	std::vector<bool> is_fast;
