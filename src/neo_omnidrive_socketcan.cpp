@@ -37,6 +37,7 @@
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <neo_msgs/EmergencyStopState.h>
+#include <sensor_msgs/Joy.h>
 
 #include <queue>
 #include <thread>
@@ -139,10 +140,12 @@ public:
 		m_node_handle.param("drive_low_pass", m_drive_low_pass, 0.5);
 		m_node_handle.param("motor_delay", m_motor_delay, 0.);
 		m_node_handle.param("trajectory_timeout", m_trajectory_timeout, 0.1);
+		m_node_handle.param("auto_home", m_auto_home, true);
 		m_node_handle.param("measure_torque", m_measure_torque, false);
+		m_node_handle.param("homeing_button", m_homeing_button, 0);
 
 		if(m_motor_group_id >= 0) {
-			ROS_INFO_STREAM("Using motors group id: " << m_motor_group_id);
+			ROS_INFO_STREAM("Using motor group id: " << m_motor_group_id);
 			m_motor_group_id += 0x300;
 		}
 
@@ -203,6 +206,7 @@ public:
 
 		m_sub_joint_trajectory = m_node_handle.subscribe("/drives/joint_trajectory", 1, &NeoSocketCanNode::joint_trajectory_callback, this);
 		m_sub_emergency_stop = m_node_handle.subscribe("emergency_stop_state", 1, &NeoSocketCanNode::emergency_stop_callback, this);
+		m_sub_joy = m_node_handle.subscribe("/joy", 1, &NeoSocketCanNode::joy_callback, this);
 
 		m_can_thread = std::thread(&NeoSocketCanNode::receive_loop, this);
 	}
@@ -236,11 +240,17 @@ public:
 			}
 		}
 
+		// check if we are stopped
+		is_stopped = true;
+		for(const auto& wheel : m_wheels) {
+			if(std::abs(wheel.drive.curr_enc_vel_inc_s) > 10) {
+				is_stopped = false;
+			}
+		}
+
 		// check if we should start homing
-		if(!is_all_homed && !is_homing_active && all_motors_operational()
-			&& m_sync_counter > 100)
+		if(m_auto_home && !is_all_homed && m_sync_counter > 100)
 		{
-			ROS_INFO_STREAM("Start homing procedure ...");
 			start_homing();
 		}
 
@@ -417,13 +427,7 @@ public:
 
 		stop_motion();
 
-		// disable watchdog
-		for(auto& wheel : m_wheels)
-		{
-			disable_watchdog(wheel.drive);
-			disable_watchdog(wheel.steer);
-		}
-		can_sync();
+		disable_watchdog_all();
 
 		// set modulo to one wheel revolution (to preserve absolute position for homed motors)
 		for(auto& wheel : m_wheels)
@@ -585,6 +589,19 @@ private:
 		is_em_stop = state->emergency_state != neo_msgs::EmergencyStopState::EMFREE;
 	}
 
+	void joy_callback(const sensor_msgs::Joy::ConstPtr& joy)
+	{
+		std::lock_guard<std::mutex> lock(m_node_mutex);
+
+		if(m_homeing_button >= 0 && int(joy->buttons.size()) > m_homeing_button)
+		{
+			if(joy->buttons[m_homeing_button])
+			{
+				start_homing();
+			}
+		}
+	}
+
 	void check_motor_timeout(motor_t& motor, ros::Time now)
 	{
 		if(motor.status_recv_time < motor.request_send_time
@@ -610,11 +627,14 @@ private:
 
 	void start_homing()
 	{
-		if(!all_motors_operational()) {
+		if(is_homing_active || !is_stopped || !all_motors_operational()) {
 			return;
 		}
+		ROS_INFO_STREAM("Start homing procedure ...");
 
 		stop_motion();
+
+		disable_watchdog_all();
 
 		for(auto& wheel : m_wheels)
 		{
@@ -772,6 +792,16 @@ private:
 		// Bit 3 is responsible for Heartbeart-Failure.
 		canopen_SDO_download(motor, 0x2F21, 0, 0x00);
 
+		can_sync();
+	}
+
+	void disable_watchdog_all()
+	{
+		for(auto& wheel : m_wheels)
+		{
+			disable_watchdog(wheel.drive);
+			disable_watchdog(wheel.steer);
+		}
 		can_sync();
 	}
 
@@ -1402,6 +1432,7 @@ private:
 
 	ros::Subscriber m_sub_joint_trajectory;
 	ros::Subscriber m_sub_emergency_stop;
+	ros::Subscriber m_sub_joy;
 
 	int m_num_wheels = 0;
 	std::vector<module_t> m_wheels;
@@ -1420,7 +1451,9 @@ private:
 	double m_drive_low_pass = 0;
 	double m_motor_delay = 0;
 	double m_trajectory_timeout = 0;
+	bool m_auto_home = false;
 	bool m_measure_torque = false;
+	int m_homeing_button = -1;
 
 	volatile bool do_run = true;
 	bool is_homing_active = false;
@@ -1429,6 +1462,7 @@ private:
 	bool is_em_stop = false;
 	bool is_motor_reset = true;
 	bool is_trajectory_timeout = false;
+	bool is_stopped = true;
 
 	uint64_t m_sync_counter = 0;
 	ros::Time m_last_sync_time;
