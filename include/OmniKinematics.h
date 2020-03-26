@@ -101,9 +101,6 @@ public:
 			double new_wheel_angle = ::atan2(vel_y, vel_x);
 			double new_wheel_vel = ::hypot(vel_x, vel_y);
 
-			// compute distance to current angle
-			const double angle_dist = fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle));
-
 			// check if wheel should be driving
 			if(fabs(new_wheel_vel) > (is_driving[i] ? zero_vel_threshold : 2 * zero_vel_threshold))
 			{
@@ -113,6 +110,9 @@ public:
 				is_driving[i] = false;
 				new_wheel_angle = last_stop_angle[i];			// keep last known angle
 			}
+
+			// compute distance to current angle
+			const double angle_dist = fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle));
 
 			// check if wheel is or should be driving fast
 			is_fast[i] = fmax(fabs(new_wheel_vel), fabs(wheel.wheel_vel))
@@ -124,19 +124,6 @@ public:
 				is_alternate[i] = true;
 			} else {
 				is_alternate[i] = false;
-			}
-
-			// check for special condition where we have two choices and we are driving fast
-			if(is_fast[i] && fabs(new_wheel_vel) > small_vel_threshold && fabs(wheel.wheel_vel) > small_vel_threshold)
-			{
-				// choose alternate if velocity is flipped and new angle is off by more than 90 deg - hysteresis
-				// (this is an optional optimization)
-				if(new_wheel_vel * wheel.wheel_vel < 0 && angle_dist > M_PI / 2 - steer_hysteresis_dynamic)
-				{
-					is_alternate[i] = true;
-				} else {
-					is_alternate[i] = false;
-				}
 			}
 
 			if(!is_fast[i])
