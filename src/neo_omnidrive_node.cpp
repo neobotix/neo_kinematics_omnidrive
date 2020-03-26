@@ -41,6 +41,7 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
+#include <sensor_msgs/Joy.h>
 
 #include <mutex>
 
@@ -61,6 +62,8 @@ public:
 			throw std::logic_error("missing wheel_lever_arm param");
 		}
 		m_node_handle.param("cmd_timeout", m_cmd_timeout, 0.2);
+		m_node_handle.param("homeing_button", m_homeing_button, 0);
+		m_node_handle.param("steer_reset_button", m_steer_reset_button, 1);
 
 		if(m_num_wheels < 1) {
 			throw std::logic_error("invalid num_wheels param");
@@ -94,6 +97,7 @@ public:
 
 		m_sub_cmd_vel = m_node_handle.subscribe("/cmd_vel", 3, &NeoOmniDriveNode::cmd_vel_callback, this);
 		m_sub_joint_state = m_node_handle.subscribe("/drives/joint_states", 10, &NeoOmniDriveNode::joint_state_callback, this);
+		m_sub_joy = m_node_handle.subscribe("/joy", 1, &NeoOmniDriveNode::joy_callback, this);
 
 		m_kinematics = std::make_shared<OmniKinematics>(m_num_wheels);
 		m_velocity_solver = std::make_shared<VelocitySolver>(m_num_wheels);
@@ -278,6 +282,26 @@ private:
 		}
 	}
 
+	void joy_callback(const sensor_msgs::Joy::ConstPtr& joy)
+	{
+		std::lock_guard<std::mutex> lock(m_node_mutex);
+
+		if(m_homeing_button >= 0 && int(joy->buttons.size()) > m_homeing_button)
+		{
+			if(joy->buttons[m_homeing_button])
+			{
+				m_kinematics->initialize(m_wheels);		// reset stop position to home
+			}
+		}
+		if(m_steer_reset_button >= 0 && int(joy->buttons.size()) > m_steer_reset_button)
+		{
+			if(joy->buttons[m_steer_reset_button])
+			{
+				m_kinematics->initialize(m_wheels);		// reset stop position to home
+			}
+		}
+	}
+
 private:
 	std::mutex m_node_mutex;
 
@@ -288,11 +312,14 @@ private:
 
 	ros::Subscriber m_sub_cmd_vel;
 	ros::Subscriber m_sub_joint_state;
+	ros::Subscriber m_sub_joy;
 
 	tf::TransformBroadcaster m_tf_odom_broadcaster;
 
 	bool m_broadcast_tf = false;
 	int m_num_wheels = 0;
+	int m_homeing_button = -1;
+	int m_steer_reset_button = -1;
 	double m_wheel_radius = 0;
 	double m_wheel_lever_arm = 0;
 	double m_cmd_timeout = 0;
