@@ -655,7 +655,7 @@ private:
 
 		begin_motion();
 
-		::usleep(100 * 1000);		// get the wheels moving first
+		::usleep(500 * 1000);		// get the wheels moving first
 
 		// arm homing
 		for(auto& wheel : m_wheels)
