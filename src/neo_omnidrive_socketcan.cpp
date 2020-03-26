@@ -684,6 +684,7 @@ private:
 		}
 		can_sync();
 
+		is_all_homed = false;
 		is_homing_active = true;
 	}
 
@@ -718,11 +719,11 @@ private:
 			configure_watchdog(wheel.drive);
 			configure_watchdog(wheel.steer);
 		}
-		can_sync();
 
 		is_all_homed = true;
 		is_homing_active = false;
 		is_steer_reset_active = true;
+		m_last_trajectory_time = ros::Time();
 	}
 
 	void set_motor_can_id(motor_t& motor, int id)
