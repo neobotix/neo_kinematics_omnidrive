@@ -60,6 +60,7 @@ public:
 	{
 		is_driving.resize(num_wheels_);
 		is_fast.resize(num_wheels_);
+		is_alternate.resize(num_wheels_);
 		last_stop_angle.resize(num_wheels_);
 	}
 
@@ -100,6 +101,9 @@ public:
 			double new_wheel_angle = ::atan2(vel_y, vel_x);
 			double new_wheel_vel = ::hypot(vel_x, vel_y);
 
+			// compute distance to current angle
+			const double angle_dist = fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle));
+
 			// check if wheel should be driving
 			if(fabs(new_wheel_vel) > (is_driving[i] ? zero_vel_threshold : 2 * zero_vel_threshold))
 			{
@@ -110,31 +114,25 @@ public:
 				new_wheel_angle = last_stop_angle[i];			// keep last known angle
 			}
 
-			bool is_alternate = false;
-
 			// first choose closest to current
-			if(fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle)) > M_PI / 2)
+			if(angle_dist > M_PI / 2 + (is_alternate[i] ? -1 : 1) * steer_hysteresis_dynamic)
 			{
-				is_alternate = true;
+				is_alternate[i] = true;
 			} else {
-				is_alternate = false;
+				is_alternate[i] = false;
 			}
 
 			// check if wheel should be driving fast
 			if(fabs(new_wheel_vel) > (is_fast[i] ? small_vel_threshold : 2 * small_vel_threshold))
 			{
-				const double dist = fabs(angles::shortest_angular_distance(new_wheel_angle, wheel.wheel_angle));
-
-				// choose alternate if new angle is off by more than 90 deg + hysteresis
-				// or if velocity is flipped and new angle is off by more than 90 deg - hysteresis
-				if(dist > M_PI / 2 + steer_hysteresis_dynamic ||
-						(fabs(wheel.wheel_vel) > small_vel_threshold
+				// choose alternate if velocity is flipped and new angle is off by more than 90 deg - hysteresis
+				if(fabs(wheel.wheel_vel) > small_vel_threshold
 							&& new_wheel_vel * wheel.wheel_vel < 0
-							&& dist > M_PI / 2 - steer_hysteresis_dynamic))
+							&& angle_dist > M_PI / 2 - steer_hysteresis_dynamic)
 				{
-					is_alternate = true;
+					is_alternate[i] = true;
 				} else {
-					is_alternate = false;
+					is_alternate[i] = false;
 				}
 				is_fast[i] = true;
 			}
@@ -150,15 +148,16 @@ public:
 
 				// if wheel is not driving fast choose the solution which is closer to outer wheel angle
 				if(fabs(angles::shortest_angular_distance(new_wheel_angle, outer_wheel_angle))
-						> M_PI / 2 + (is_alternate ? -1 : 1) * steer_hysteresis)
+						> M_PI / 2 + steer_hysteresis)
 				{
-					is_alternate = true;
+					is_alternate[i] = true;
 				} else {
-					is_alternate = false;
+					is_alternate[i] = false;
+
 				}
 			}
 
-			if(is_alternate)
+			if(is_alternate[i])
 			{
 				new_wheel_angle = angles::normalize_angle(new_wheel_angle + M_PI);
 				new_wheel_vel = -1 * new_wheel_vel;
@@ -178,6 +177,7 @@ private:
 
 	std::vector<bool> is_driving;
 	std::vector<bool> is_fast;
+	std::vector<bool> is_alternate;
 	std::vector<double> last_stop_angle;
 
 };
