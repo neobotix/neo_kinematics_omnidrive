@@ -264,7 +264,6 @@ public:
 				{
 					canopen_query(wheel.steer, 'H', 'M', 1);
 				}
-				can_sync();
 			}
 		}
 
@@ -322,7 +321,6 @@ public:
 				motor_set_vel(wheel.drive, wheel.control_wheel_vel);
 				motor_set_vel(wheel.steer, fmin(fmax(wheel.control_steer_vel, -m_max_steer_vel), m_max_steer_vel));
 			}
-			can_sync();
 			begin_motion();
 		}
 
@@ -1051,7 +1049,7 @@ private:
 	 */
 	void can_sync()
 	{
-		::usleep(1000);		// workaround, sleep for around 10 msgs
+		::usleep(10000);		// workaround, sleep for around 10 msgs
 	}
 
 	/*
