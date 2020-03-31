@@ -713,7 +713,7 @@ private:
 			}
 
 			// check for timeout
-			if((now - wheel.steer.homing_start_time).toSec() > 10)
+			if((now - wheel.steer.homing_start_time).toSec() > 20)
 			{
 				ROS_WARN_STREAM("Homeing timeout on motor " << wheel.steer.joint_name << ", restarting ...");				
 
