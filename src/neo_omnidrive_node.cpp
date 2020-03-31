@@ -367,7 +367,7 @@ int main(int argc, char** argv)
 			rate.sleep();
 		}
 	} catch(std::exception& ex) {
-		ROS_ERROR_STREAM(ex.what());
+		ROS_ERROR_STREAM("NeoOmniDriveNode: " << ex.what());
 	}
 
 	return 0;

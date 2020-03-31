@@ -1538,7 +1538,7 @@ int main(int argc, char** argv)
 		{
 			if(ros::ok())
 			{
-				ROS_ERROR_STREAM(ex.what());
+				ROS_ERROR_STREAM("NeoSocketCanNode: " << ex.what());
 				::usleep(1000 * 1000);
 				continue;
 			}
@@ -1556,7 +1556,7 @@ int main(int argc, char** argv)
 		catch(std::exception& ex)
 		{
 			if(ros::ok()) {
-				ROS_ERROR_STREAM(ex.what());
+				ROS_ERROR_STREAM("NeoSocketCanNode: " << ex.what());
 			}
 		}
 
