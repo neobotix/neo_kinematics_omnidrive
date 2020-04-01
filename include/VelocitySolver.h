@@ -36,7 +36,8 @@
 #define INCLUDE_VELOCITY_SOLVER_H_
 
 #include "OmniWheel.h"
-#include "MatrixX.h"
+
+#include <neo_common/MatrixX.h>
 
 #include <math.h>
 #include <stdexcept>

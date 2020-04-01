@@ -17,6 +17,7 @@ find_package(catkin REQUIRED
             roscpp
             tf
             neo_msgs
+            neo_common
         )
 
 include_directories(
@@ -31,12 +32,12 @@ include_directories(
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES neo_kinematics_omnidrive
     CATKIN_DEPENDS
         dynamic_reconfigure
         roscpp
 		tf
 		neo_msgs
+		neo_common
 )
 
 add_executable(neo_omnidrive_node src/neo_omnidrive_node.cpp)
