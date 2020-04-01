@@ -2,9 +2,7 @@
     <name>neo_kinematics_omnidrive</name>
     <version>1.0.0</version>
     <description>
-
-        TODO
-
+		Omni-directional kinematics and motor controller interface.
     </description>
     <author>Max Wittal</author>
     <author>wittal@neobotix.de</author>
