@@ -339,7 +339,7 @@ public:
 		if(m_last_update_time < m_last_sync_time)
 		{
 			if(is_all_homed) {
-				ROS_WARN_STREAM("Sync update timeout!");
+				ROS_DEBUG_STREAM("Sync update timeout!");
 			}
 		}
 
