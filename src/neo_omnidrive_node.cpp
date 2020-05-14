@@ -302,6 +302,7 @@ private:
 		{
 			if(joy->buttons[m_homeing_button])
 			{
+				::usleep(100 * 1000);					// wait for homeing to start before sending new commands
 				m_kinematics->initialize(m_wheels);		// reset stop position to home
 			}
 		}
