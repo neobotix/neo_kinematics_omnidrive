@@ -244,7 +244,7 @@ public:
 		// check if we are stopped
 		is_stopped = true;
 		for(const auto& wheel : m_wheels) {
-			if(std::abs(wheel.drive.curr_enc_vel_inc_s) > 10) {
+			if(std::abs(wheel.drive.curr_enc_vel_inc_s) > 100) {
 				is_stopped = false;
 			}
 		}
