@@ -55,6 +55,11 @@ public:
 	double steer_hysteresis = 0.5;				// [rad]
 	double steer_hysteresis_dynamic = 0.1;			// [rad]
 
+	std::vector<bool> is_driving;
+	std::vector<bool> is_fast;
+	std::vector<bool> is_alternate;
+	std::vector<double> last_stop_angle;
+
 	OmniKinematics(int num_wheels_)
 		:	num_wheels(num_wheels_)
 	{
@@ -160,11 +165,6 @@ public:
 private:
 	int num_wheels = 0;
 	int switching_wheel = -1;		// which wheel is switching to outer position right now
-
-	std::vector<bool> is_driving;
-	std::vector<bool> is_fast;
-	std::vector<bool> is_alternate;
-	std::vector<double> last_stop_angle;
 
 };
 

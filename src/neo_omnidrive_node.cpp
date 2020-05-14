@@ -38,6 +38,9 @@
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
+#include <neo_srvs/LockPlatform.h>
+#include <neo_srvs/UnlockPlatform.h>
+#include <neo_srvs/ResetOmniWheels.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
@@ -99,6 +102,10 @@ public:
 		m_sub_joint_state = m_node_handle.subscribe("/drives/joint_states", 10, &NeoOmniDriveNode::joint_state_callback, this);
 		m_sub_joy = m_node_handle.subscribe("/joy", 1, &NeoOmniDriveNode::joy_callback, this);
 
+		m_srv_lock_platform = m_node_handle.advertiseService("lock_platform", &NeoOmniDriveNode::lock_platform, this);
+		m_srv_unlock_platform = m_node_handle.advertiseService("unlock_platform", &NeoOmniDriveNode::unlock_platform, this);
+		m_srv_reset_omni_wheels = m_node_handle.advertiseService("reset_omni_wheels", &NeoOmniDriveNode::reset_omni_wheels, this);
+
 		m_kinematics = std::make_shared<OmniKinematics>(m_num_wheels);
 		m_velocity_solver = std::make_shared<VelocitySolver>(m_num_wheels);
 
@@ -131,6 +138,11 @@ public:
 		}
 		else {
 			is_cmd_timeout = false;
+		}
+
+		// check if platform is locked
+		if(is_locked) {
+			m_last_cmd_vel = geometry_msgs::Twist();	// use zero cmd_vel
 		}
 
 		// compute new wheel angles and velocities
@@ -302,6 +314,42 @@ private:
 		}
 	}
 
+	bool lock_platform(neo_srvs::LockPlatform::Request& request, neo_srvs::LockPlatform::Response& response)
+	{
+		if(		fabs(m_last_cmd_vel.linear.x) < 0.1
+			&&	fabs(m_last_cmd_vel.linear.y) < 0.1
+			&&	fabs(m_last_cmd_vel.angular.z) < 0.1)
+		{
+			is_locked = true;
+			response.success = true;
+			return true;
+		}
+		response.success = false;
+		return false;
+	}
+
+	bool unlock_platform(neo_srvs::UnlockPlatform::Request& request, neo_srvs::UnlockPlatform::Response& response)
+	{
+		is_locked = false;
+		response.success = true;
+		return true;
+	}
+
+	bool reset_omni_wheels(neo_srvs::ResetOmniWheels::Request& request, neo_srvs::ResetOmniWheels::Response& response)
+	{
+		if(m_num_wheels >= request.steer_angles_rad.size()) {
+			response.success = true;
+			for(size_t i = 0; i < request.steer_angles_rad.size(); ++i)
+			{
+				m_kinematics->last_stop_angle[i] = request.steer_angles_rad[i];
+				response.success = response.success && !m_kinematics->is_driving[i];
+			}
+			return true;
+		}
+		response.success = false;
+		return false;
+	}
+
 private:
 	std::mutex m_node_mutex;
 
@@ -313,6 +361,10 @@ private:
 	ros::Subscriber m_sub_cmd_vel;
 	ros::Subscriber m_sub_joint_state;
 	ros::Subscriber m_sub_joy;
+
+	ros::ServiceServer m_srv_lock_platform;
+	ros::ServiceServer m_srv_unlock_platform;
+	ros::ServiceServer m_srv_reset_omni_wheels;
 
 	tf::TransformBroadcaster m_tf_odom_broadcaster;
 
@@ -332,6 +384,7 @@ private:
 	ros::Time m_last_cmd_time;
 	geometry_msgs::Twist m_last_cmd_vel;
 	bool is_cmd_timeout = false;
+	bool is_locked = false;
 
 	ros::Time m_curr_odom_time;
 	double m_curr_odom_x = 0;
