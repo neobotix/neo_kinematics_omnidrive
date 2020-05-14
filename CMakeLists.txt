@@ -44,6 +44,10 @@ add_executable(neo_omnidrive_node src/neo_omnidrive_node.cpp)
 add_dependencies(neo_omnidrive_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(neo_omnidrive_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_LIBRARIES})
 
+add_executable(neo_omnidrive_simulation_node src/neo_omnidrive_simulation_node.cpp)
+add_dependencies(neo_omnidrive_simulation_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(neo_omnidrive_simulation_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_LIBRARIES})
+
 add_executable(neo_omnidrive_socketcan src/neo_omnidrive_socketcan.cpp)
 add_dependencies(neo_omnidrive_socketcan ${catkin_EXPORTED_TARGETS})
 target_link_libraries(neo_omnidrive_socketcan ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_LIBRARIES})
