@@ -21,13 +21,13 @@ home_vel: -1.0
 
 drive0:
   can_id: 2
-  joint_name: fl_caster_r_wheel_joint
+  joint_name: wheel_0_joint
   rot_sign: -1
   gear_ratio: 30
   enc_ticks_per_rev: 10000
 steer0:
   can_id: 1
-  joint_name: fl_caster_rotation_joint
+  joint_name: mpo_700_head_0_joint
   center_pos_x: 0.240
   center_pos_y: 0.190
   rot_sign: 1
@@ -39,13 +39,13 @@ steer0:
 
 drive1:
   can_id: 4
-  joint_name: bl_caster_r_wheel_joint
+  joint_name: wheel_1_joint
   rot_sign: 1
   gear_ratio: 30
   enc_ticks_per_rev: 10000
 steer1:
   can_id: 3
-  joint_name: bl_caster_rotation_joint
+  joint_name: mpo_700_head_1_joint
   center_pos_x: -0.240
   center_pos_y: 0.190
   rot_sign: -1
@@ -57,13 +57,13 @@ steer1:
 
 drive2:
   can_id: 6
-  joint_name: br_caster_r_wheel_joint
+  joint_name: wheel_2_joint
   rot_sign: -1
   gear_ratio: 30
   enc_ticks_per_rev: 10000
 steer2:
   can_id: 5
-  joint_name: br_caster_rotation_joint
+  joint_name: mpo_700_head_2_joint
   center_pos_x: -0.240
   center_pos_y: -0.190
   rot_sign: 1
@@ -75,13 +75,13 @@ steer2:
 
 drive3:
   can_id: 8
-  joint_name: fr_caster_r_wheel_joint
+  joint_name: wheel_3_joint
   rot_sign: 1
   gear_ratio: 30
   enc_ticks_per_rev: 10000
 steer3:
   can_id: 7
-  joint_name: fr_caster_rotation_joint
+  joint_name: mpo_700_head_3_joint
   center_pos_x: 0.240
   center_pos_y: -0.190
   rot_sign: -1
@@ -90,4 +90,5 @@ steer3:
   home_angle: 0.0
   home_dig_in: 9
   enc_home_offset: -6186
+
 
