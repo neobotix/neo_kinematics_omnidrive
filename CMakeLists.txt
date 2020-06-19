@@ -16,6 +16,7 @@ find_package(catkin REQUIRED
             dynamic_reconfigure
             roscpp
             tf
+            neo_srvs
             neo_msgs
             neo_common
         )
@@ -36,6 +37,7 @@ catkin_package(
         dynamic_reconfigure
         roscpp
 		tf
+        neo_srvs
 		neo_msgs
 		neo_common
 )
