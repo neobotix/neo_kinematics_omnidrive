@@ -92,7 +92,7 @@ public:
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
 
-		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
+		//m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
 		fl_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_caster_front_left_controller/command", 1);
 		bl_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_caster_back_left_controller/command", 1);
 		br_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_caster_back_right_controller/command", 1);
@@ -238,7 +238,7 @@ private:
 
 	ros::NodeHandle m_node_handle;
 
-	ros::Publisher m_pub_odometry;
+	//ros::Publisher m_pub_odometry;
 	ros::Publisher m_pub_joint_trajectory;
 	ros::Publisher br_drive_pub;
 	ros::Publisher bl_drive_pub;
