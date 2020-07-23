@@ -93,6 +93,7 @@ public:
 				throw std::logic_error("home_angle param missing for steering motor" + std::to_string(i));
 			}
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
+			m_wheels[i].set_wheel_angle(0);
 		}
 
 		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
