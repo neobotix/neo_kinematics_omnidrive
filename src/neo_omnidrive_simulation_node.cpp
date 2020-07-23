@@ -92,15 +92,15 @@ public:
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
 
-		m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
-		fl_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_head_0_controller/command", 1);
-		bl_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_head_1_controller/command", 1);
-		br_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_head_2_controller/command", 1);
-		fr_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_head_3_controller/command", 1);
-		fl_drive_pub = m_node_handle.advertise<std_msgs::Float64>("/wheel_0_controller/command", 1);
-		bl_drive_pub = m_node_handle.advertise<std_msgs::Float64>("/wheel_1_controller/command", 1);
-		br_drive_pub = m_node_handle.advertise<std_msgs::Float64>("/wheel_2_controller/command", 1);
-		fr_drive_pub = m_node_handle.advertise<std_msgs::Float64>("/wheel_3_controller/command", 1);
+		//m_pub_odometry = m_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
+		fl_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_caster_front_left_controller/command", 1);
+		bl_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_caster_back_left_controller/command", 1);
+		br_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_caster_back_right_controller/command", 1);
+		fr_caster_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_caster_front_right_controller/command", 1);
+		fl_drive_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_wheel_front_left_controller/command", 1);
+		bl_drive_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_wheel_back_left_controller/command", 1);
+		br_drive_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_wheel_back_right_controller/command", 1);
+		fr_drive_pub = m_node_handle.advertise<std_msgs::Float64>("/mpo_700_wheel_front_right_controller/command", 1);
 		
 
 		m_sub_cmd_vel = m_node_handle.subscribe("/cmd_vel", 3, &NeoOmniDriveNode::cmd_vel_callback, this);
@@ -238,7 +238,7 @@ private:
 
 	ros::NodeHandle m_node_handle;
 
-	ros::Publisher m_pub_odometry;
+	//ros::Publisher m_pub_odometry;
 	ros::Publisher m_pub_joint_trajectory;
 	ros::Publisher br_drive_pub;
 	ros::Publisher bl_drive_pub;
