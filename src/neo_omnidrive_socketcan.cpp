@@ -363,6 +363,7 @@ public:
 			else {
 				for(auto& wheel : m_wheels) {
 					canopen_query(wheel.drive, 'I', 'Q', 0);	// query motor current
+					canopen_query(wheel.steer, 'I', 'Q', 0);	// query motor current
 				}
 			}
 		}
