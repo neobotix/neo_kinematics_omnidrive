@@ -771,6 +771,8 @@ private:
 		// velocity 4 byte of TPDO1
 		canopen_SDO_download(motor, 0x1A00, 2, 0x60690020);
 
+		can_sync();
+
 		// transmission type "synch"
 		canopen_SDO_download(motor, 0x1800, 2, 1);
 
@@ -791,6 +793,8 @@ private:
 
 		// error behavior after failure: 0=pre-operational, 1=no state change, 2=stopped"
 		canopen_SDO_download(motor, 0x1029, 1, 2);
+
+		can_sync();
 
 		// motor behavior after heartbeat failure: "quick stop"
 		canopen_SDO_download(motor, 0x6007, 0, 3);
