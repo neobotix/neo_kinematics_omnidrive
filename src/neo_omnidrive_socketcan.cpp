@@ -1363,6 +1363,9 @@ private:
 			else if(motor.curr_motor_failure & (1 << 21)) {
 				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: motor stuck");
 			}
+			else {
+				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: " << motor.curr_motor_failure);
+			}
 		}
 	}
 
