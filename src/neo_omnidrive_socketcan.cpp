@@ -38,6 +38,8 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include <neo_msgs/EmergencyStopState.h>
 #include <sensor_msgs/Joy.h>
+#include <neo_srvs/ActivateMotors.h>
+
 
 #include <queue>
 #include <thread>
@@ -209,7 +211,28 @@ public:
 		m_sub_emergency_stop = m_node_handle.subscribe("emergency_stop_state", 1, &NeoSocketCanNode::emergency_stop_callback, this);
 		m_sub_joy = m_node_handle.subscribe("/joy", 1, &NeoSocketCanNode::joy_callback, this);
 
+		m_srv_activate_motors = m_node_handle.advertiseService("reset_motors", &NeoSocketCanNode::activate_motors, this);
+
 		m_can_thread = std::thread(&NeoSocketCanNode::receive_loop, this);
+	}
+
+	bool activate_motors(neo_srvs::ActivateMotors::Request& request, neo_srvs::ActivateMotors::Response& response)
+	{
+		ROS_INFO_STREAM("Reactivating motors ...");
+
+		// reset states
+		for(auto& wheel : m_wheels)
+		{
+			wheel.drive.state = ST_PRE_INITIALIZED;
+			wheel.steer.state = ST_PRE_INITIALIZED;
+		}
+		is_motor_reset = true;
+
+		all_motors_on();			// re-activate the motors
+
+		request_status_all();		// request new status
+
+		is_em_stop = false;
 	}
 
 	void update()
@@ -1477,6 +1500,8 @@ private:
 	ros::Subscriber m_sub_joint_trajectory;
 	ros::Subscriber m_sub_emergency_stop;
 	ros::Subscriber m_sub_joy;
+
+	ros::ServiceServer m_srv_activate_motors;
 
 	int m_num_wheels = 0;
 	std::vector<module_t> m_wheels;

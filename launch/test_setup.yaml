@@ -12,6 +12,7 @@ steer_low_pass: 0.5
 max_steer_vel: 8.0
 motor_delay: 0.0
 broadcast_tf: true
+restart_motors: false #Please consult with your contact partner with Neobotix before setting this to true. 
 
 can_iface: can0
 motor_timeout: 0.2
