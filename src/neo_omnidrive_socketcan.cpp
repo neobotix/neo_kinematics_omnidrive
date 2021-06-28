@@ -38,6 +38,8 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include <neo_msgs/EmergencyStopState.h>
 #include <sensor_msgs/Joy.h>
+#include <neo_srvs/ActivateMotors.h>
+
 
 #include <queue>
 #include <thread>
@@ -144,7 +146,6 @@ public:
 		m_node_handle.param("auto_home", m_auto_home, true);
 		m_node_handle.param("measure_torque", m_measure_torque, false);
 		m_node_handle.param("homeing_button", m_homeing_button, 0);
-		m_node_handle.param("restart_motors", m_restart_motors, false);
 
 		if(m_motor_group_id >= 0) {
 			ROS_INFO_STREAM("Using motor group id: " << m_motor_group_id);
@@ -210,33 +211,28 @@ public:
 		m_sub_emergency_stop = m_node_handle.subscribe("emergency_stop_state", 1, &NeoSocketCanNode::emergency_stop_callback, this);
 		m_sub_joy = m_node_handle.subscribe("/joy", 1, &NeoSocketCanNode::joy_callback, this);
 
+		m_srv_activate_motors = m_node_handle.advertiseService("reset_motors", &NeoSocketCanNode::activate_motors, this);
+
 		m_can_thread = std::thread(&NeoSocketCanNode::receive_loop, this);
-		timer = m_node_handle.createTimer(ros::Duration(3), &NeoSocketCanNode::timerCallback, this);
 	}
 
-	void timerCallback(const ros::TimerEvent&)
+	bool activate_motors(neo_srvs::ActivateMotors::Request& request, neo_srvs::ActivateMotors::Response& response)
 	{
-		bool b_MotorFailure = false;
+		ROS_INFO_STREAM("Reactivating motors ...");
+
+		// reset states
 		for(auto& wheel : m_wheels)
 		{
-			int iMotorsFailed = 0;
-			if(wheel.drive.state == ST_MOTOR_FAILURE && wheel.steer.state == ST_MOTOR_FAILURE)
-			{
-				wheel.drive.state = ST_PRE_INITIALIZED;
-				wheel.steer.state = ST_PRE_INITIALIZED;
-				iMotorsFailed++;
-			}
-			if(iMotorsFailed == 4)
-			{
-				b_MotorFailure = true;
-			}
+			wheel.drive.state = ST_PRE_INITIALIZED;
+			wheel.steer.state = ST_PRE_INITIALIZED;
 		}
-		if(b_MotorFailure == true)
-		{
-			is_motor_reset = true;
-			all_motors_on();			// re-activate the motors
-			request_status_all();		// request new status
-		}
+		is_motor_reset = true;
+
+		all_motors_on();			// re-activate the motors
+
+		request_status_all();		// request new status
+
+		is_em_stop = false;
 	}
 
 	void update()
@@ -1505,7 +1501,7 @@ private:
 	ros::Subscriber m_sub_emergency_stop;
 	ros::Subscriber m_sub_joy;
 
-	ros::Timer timer;
+	ros::ServiceServer m_srv_activate_motors;
 
 	int m_num_wheels = 0;
 	std::vector<module_t> m_wheels;
@@ -1525,7 +1521,6 @@ private:
 	double m_motor_delay = 0;
 	double m_trajectory_timeout = 0;
 	bool m_auto_home = false;
-	bool m_restart_motors = false;
 	bool m_measure_torque = false;
 	int m_homeing_button = -1;
 
