@@ -144,6 +144,7 @@ public:
 		m_node_handle.param("auto_home", m_auto_home, true);
 		m_node_handle.param("measure_torque", m_measure_torque, false);
 		m_node_handle.param("homeing_button", m_homeing_button, 0);
+		m_node_handle.param("restart_motors", m_restart_motors, false);
 
 		if(m_motor_group_id >= 0) {
 			ROS_INFO_STREAM("Using motor group id: " << m_motor_group_id);
@@ -210,6 +211,32 @@ public:
 		m_sub_joy = m_node_handle.subscribe("/joy", 1, &NeoSocketCanNode::joy_callback, this);
 
 		m_can_thread = std::thread(&NeoSocketCanNode::receive_loop, this);
+		timer = m_node_handle.createTimer(ros::Duration(3), &NeoSocketCanNode::timerCallback, this);
+	}
+
+	void timerCallback(const ros::TimerEvent&)
+	{
+		bool b_MotorFailure = false;
+		for(auto& wheel : m_wheels)
+		{
+			int iMotorsFailed = 0;
+			if(wheel.drive.state == ST_MOTOR_FAILURE && wheel.steer.state == ST_MOTOR_FAILURE)
+			{
+				wheel.drive.state = ST_PRE_INITIALIZED;
+				wheel.steer.state = ST_PRE_INITIALIZED;
+				iMotorsFailed++;
+			}
+			if(iMotorsFailed == 4)
+			{
+				b_MotorFailure = true;
+			}
+		}
+		if(b_MotorFailure == true)
+		{
+			is_motor_reset = true;
+			all_motors_on();			// re-activate the motors
+			request_status_all();		// request new status
+		}
 	}
 
 	void update()
@@ -1478,6 +1505,8 @@ private:
 	ros::Subscriber m_sub_emergency_stop;
 	ros::Subscriber m_sub_joy;
 
+	ros::Timer timer;
+
 	int m_num_wheels = 0;
 	std::vector<module_t> m_wheels;
 
@@ -1496,6 +1525,7 @@ private:
 	double m_motor_delay = 0;
 	double m_trajectory_timeout = 0;
 	bool m_auto_home = false;
+	bool m_restart_motors = false;
 	bool m_measure_torque = false;
 	int m_homeing_button = -1;
 
