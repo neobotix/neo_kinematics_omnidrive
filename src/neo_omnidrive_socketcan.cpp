@@ -32,13 +32,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <ros/ros.h>
 #include <angles/angles.h>
-#include <sensor_msgs/JointState.h>
-#include <trajectory_msgs/JointTrajectory.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
+#include <diagnostic_msgs/DiagnosticStatus.h>
+#include <diagnostic_msgs/KeyValue.h>
 #include <neo_msgs/EmergencyStopState.h>
-#include <sensor_msgs/Joy.h>
 #include <neo_srvs/ActivateMotors.h>
+#include <ros/ros.h>
+#include <sensor_msgs/JointState.h>
+#include <sensor_msgs/Joy.h>
+#include <trajectory_msgs/JointTrajectory.h>
 
 
 #include <queue>
@@ -133,6 +136,7 @@ public:
 		}
 		m_node_handle.param("request_status_divider", m_request_status_divider, 10);
 		m_node_handle.param("heartbeat_divider", m_heartbeat_divider, 10);
+		m_node_handle.param("diagnostics_divider", m_diagnostics_divider, 20);
 		m_node_handle.param("motor_group_id", m_motor_group_id, -1);
 		m_node_handle.param("motor_timeout", m_motor_timeout, 1.);
 		m_node_handle.param("home_vel", m_home_vel, -1.);
@@ -146,6 +150,7 @@ public:
 		m_node_handle.param("auto_home", m_auto_home, true);
 		m_node_handle.param("measure_torque", m_measure_torque, false);
 		m_node_handle.param("homeing_button", m_homeing_button, 0);
+		m_node_handle.param("diagnostics_prefix", m_diagnostics_prefix, std::string(""));
 
 		if(m_motor_group_id >= 0) {
 			ROS_INFO_STREAM("Using motor group id: " << m_motor_group_id);
@@ -204,6 +209,7 @@ public:
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
 
+		m_pub_diagnostics = m_node_handle.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10);
 		m_pub_joint_state = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states", 10);
 		m_pub_joint_state_raw = m_node_handle.advertise<sensor_msgs::JointState>("/drives/joint_states_raw", 10);
 
@@ -233,6 +239,8 @@ public:
 		request_status_all();		// request new status
 
 		is_em_stop = false;
+
+		return true;
 	}
 
 	void update()
@@ -413,6 +421,11 @@ public:
 			msg.id  = 0x700;
 			msg.length = 5;
 			can_transmit(msg);
+		}
+
+		if (m_diagnostics_divider != 0 && (m_sync_counter % m_diagnostics_divider) == 0)
+		{
+			publish_diagnostics(m_last_sync_time);
 		}
 	}
 
@@ -1182,6 +1195,78 @@ private:
 		}
 	}
 
+	void fill_motor_diagnostics(diagnostic_msgs::DiagnosticStatus &status, const NeoSocketCanNode::motor_t &motor, const bool is_steer)
+	{
+		status.name = m_diagnostics_prefix + motor.joint_name;
+		status.hardware_id = std::to_string(motor.can_id);
+		std::vector<std::string> problems;
+
+		diagnostic_msgs::KeyValue kv;
+		kv.key = "state";
+		kv.value = state_to_string(motor.state);
+		if (motor.state != motor_state_e::ST_OPERATION_ENABLED) {
+			problems.push_back("state: " + kv.value);
+		}
+		status.values.push_back(kv);
+		if (is_steer)
+		{
+			kv.key = "homing_state";
+			kv.value = homing_state_to_string(motor.homing_state);
+			status.values.push_back(kv);
+			if (motor.homing_state != 2) {
+				// 2 means homing finished
+				problems.push_back("homing: " + kv.value);
+			}
+		}
+		kv.key = "status_register";
+		kv.value = status_register_to_string(motor.curr_status);
+		if (motor.curr_status & (1 << 6))
+		{
+			// a motor failure is latched
+			kv.value += ", latched motor failure: ";
+			kv.value += motor_failure_register_to_string(motor.curr_motor_failure);
+		}
+		status.values.push_back(kv);
+		if (kv.value != "operation enabled")
+		{
+			problems.push_back("status: " + kv.value);
+		}
+
+		if (problems.size() == 0)
+		{
+			status.message = "OK";
+			status.level = diagnostic_msgs::DiagnosticStatus::OK;
+		}
+		else
+		{
+			status.message = "";
+			bool first = true;
+			for (const auto &problem : problems)
+			{
+				if (!first) {
+					status.message += ", ";
+				}
+				first = false;
+				status.message += problem;
+			}
+			status.level = diagnostic_msgs::DiagnosticStatus::ERROR;
+		}
+	}
+
+	void publish_diagnostics(ros::Time timestamp)
+	{
+		diagnostic_msgs::DiagnosticArray msg;
+		msg.header.stamp = timestamp;
+		msg.status.resize(m_wheels.size() * 2);
+		size_t wheels_index = 0;
+		for (const auto &wheel : m_wheels)
+		{
+			fill_motor_diagnostics(msg.status[wheels_index++], wheel.drive, false);
+			fill_motor_diagnostics(msg.status[wheels_index++], wheel.steer, true);
+		}
+		m_pub_diagnostics.publish(msg);
+	}
+
 	void publish_joint_states(ros::Time timestamp)
 	{
 		sensor_msgs::JointState::Ptr joint_state = boost::make_shared<sensor_msgs::JointState>();
@@ -1309,21 +1394,10 @@ private:
 		{
 			if(motor.curr_status != prev_status)
 			{
-				if((motor.curr_status & 0xE) == 2) {
-					ROS_ERROR_STREAM(motor.joint_name << ": drive error under voltage");
-				}
-				else if((motor.curr_status & 0xE) == 4) {
-					ROS_ERROR_STREAM(motor.joint_name << ": drive error over voltage");
-				}
-				else if((motor.curr_status & 0xE) == 10) {
-					ROS_ERROR_STREAM(motor.joint_name << ": drive error short circuit");
-				}
-				else if((motor.curr_status & 0xE) == 12) {
-					ROS_ERROR_STREAM(motor.joint_name << ": drive error over-heating");
-				}
-				else {
-					ROS_ERROR_STREAM(motor.joint_name << ": unknown failure: " << (motor.curr_status & 0xE));
-				}
+				ROS_ERROR_STREAM(
+					motor.joint_name << ": " <<
+					status_register_to_string(motor.curr_status)
+				);
 			}
 
 			// request detailed description of failure
@@ -1336,7 +1410,10 @@ private:
 			// general failure
 			if(motor.curr_status != prev_status)
 			{
-				ROS_ERROR_STREAM(motor.joint_name << ": failure latched");
+				ROS_ERROR_STREAM(
+					motor.joint_name << ": " <<
+					status_register_to_string(motor.curr_status)
+				);
 			}
 
 			// request detailed description of failure
@@ -1350,45 +1427,79 @@ private:
 			if(motor.curr_status & (1 << 4))
 			{
 				if(motor.state != ST_OPERATION_ENABLED) {
-					ROS_INFO_STREAM(motor.joint_name << ": operation enabled");
+					ROS_INFO_STREAM(
+						motor.joint_name << ": " <<
+						status_register_to_string(motor.curr_status)
+					);
 				}
 				motor.state = ST_OPERATION_ENABLED;
 			}
 			else
 			{
 				if(motor.state != ST_OPERATION_DISABLED) {
-					ROS_WARN_STREAM(motor.joint_name << ": operation disabled");
+					ROS_WARN_STREAM(
+						motor.joint_name << ": " <<
+						status_register_to_string(motor.curr_status)
+					);
 				}
 				motor.state = ST_OPERATION_DISABLED;
 			}
 		}
 	}
 
+	std::string state_to_string(motor_state_e state)
+	{
+		if (state == ST_PRE_INITIALIZED) { return "pre-initialized"; }
+		if (state == ST_OPERATION_ENABLED) {return "operation enabled"; }
+		if (state == ST_OPERATION_DISABLED) {return "operation disabled"; }
+		if (state == ST_MOTOR_FAILURE) {return "motor failure"; }
+		return "unknown (" + std::to_string(static_cast<int>(state)) + ")";
+	}
+
+	std::string homing_state_to_string(int homing_state) {
+		if (homing_state == -2) { return "restart"; }
+		if (homing_state ==  0) { return "active"; }
+		if (homing_state ==  1) { return "finished"; }
+		if (homing_state ==  2) { return "done"; }
+		return "unknown (" + std::to_string(homing_state) + ")";
+	}
+
+	std::string status_register_to_string(int32_t status)
+	{
+		if (status & 1) {
+			if ((status & 0xE) == 2) { return "drive error under voltage"; }
+			if ((status & 0xE) == 4) { return "drive error over voltage"; }
+			if ((status & 0xE) == 10) { return "drive error short circuit"; }
+			if ((status & 0xE) == 12) { return "drive error over-heating"; }
+			return "unknown failure: " + std::to_string(status & 0xE);
+		}
+		if(status & (1 << 6)) { return "failure latched"; }
+		if(status & (1 << 4)) { return "operation enabled"; }
+		return "operation disabled";
+	}
+
+	std::string motor_failure_register_to_string(int32_t motor_failure)
+	{
+		if(motor_failure == 0) { return "no failure"; }
+
+		if(motor_failure & (1 << 2)) { return "feedback loss"; }
+		if(motor_failure & (1 << 3)) { return "peak current exceeded"; }
+		if(motor_failure & (1 << 7)) { return "speed track error"; }
+		if(motor_failure & (1 << 8)) { return "position track error"; }
+		if(motor_failure & (1 << 17)) { return "speed limit exceeded"; }
+		if(motor_failure & (1 << 21)) { return "motor stuck"; }
+
+		return "motor failure code " + std::to_string(motor_failure);
+	}
+
 	void evaluate_motor_failure(motor_t& motor, int32_t prev_status)
 	{
 		if(motor.curr_motor_failure != prev_status)
 		{
-			if(motor.curr_motor_failure & (1 << 2)) {
-				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: feedback loss");
-			}
-			else if(motor.curr_motor_failure & (1 << 3)) {
-				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: peak current exceeded");
-			}
-			else if(motor.curr_motor_failure & (1 << 7)) {
-				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: speed track error");
-			}
-			else if(motor.curr_motor_failure & (1 << 8)) {
-				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: position track error");
-			}
-			else if(motor.curr_motor_failure & (1 << 17)) {
-				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: speed limit exceeded");
-			}
-			else if(motor.curr_motor_failure & (1 << 21)) {
-				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: motor stuck");
-			}
-			else {
-				ROS_ERROR_STREAM(motor.joint_name << ": motor failure: " << motor.curr_motor_failure);
-			}
+			ROS_ERROR_STREAM(
+				motor.joint_name << ": motor failure: " <<
+				motor_failure_register_to_string(motor.curr_motor_failure)
+			);
 		}
 	}
 
@@ -1494,8 +1605,11 @@ private:
 
 	ros::NodeHandle m_node_handle;
 
+	ros::Publisher m_pub_diagnostics;
 	ros::Publisher m_pub_joint_state;
 	ros::Publisher m_pub_joint_state_raw;
+
+	std::string m_diagnostics_prefix;
 
 	ros::Subscriber m_sub_joint_trajectory;
 	ros::Subscriber m_sub_emergency_stop;
@@ -1510,6 +1624,7 @@ private:
 	int m_motor_group_id = -1;
 	int m_request_status_divider = 0;
 	int m_heartbeat_divider = 0;
+	int m_diagnostics_divider = 0;
 	double m_control_rate = 0;
 	double m_motor_timeout = 0;
 	double m_home_vel = 0;
