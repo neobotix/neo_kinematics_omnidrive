@@ -151,6 +151,13 @@ public:
 		m_node_handle.param("measure_torque", m_measure_torque, false);
 		m_node_handle.param("homeing_button", m_homeing_button, 0);
 		m_node_handle.param("diagnostics_prefix", m_diagnostics_prefix, std::string(""));
+		// these values are used to calculate and store max_accel_enc_s for each motor
+		double wheel_radius;
+		if(!m_node_handle.getParam("wheel_radius", wheel_radius)) {
+			throw std::logic_error("missing wheel_radius param");
+		}
+		double max_drive_acc;
+		m_node_handle.param("max_drive_acc", max_drive_acc, 0.0);  // in m/s^2
 
 		if(m_motor_group_id >= 0) {
 			ROS_INFO_STREAM("Using motor group id: " << m_motor_group_id);
@@ -206,6 +213,11 @@ public:
 			m_node_handle.param("drive" + std::to_string(i) + "/torque_constant", m_wheels[i].drive.torque_constant, 0.);
 			m_node_handle.param("steer" + std::to_string(i) + "/torque_constant", m_wheels[i].steer.torque_constant, 0.);
 
+			double drive_ticks_per_m = m_wheels[i].drive.enc_ticks_per_rev * m_wheels[i].drive.gear_ratio / (2 * M_PI * wheel_radius);
+			if (max_drive_acc != 0) {
+				m_wheels[i].drive.max_accel_enc_s = max_drive_acc * drive_ticks_per_m;
+				ROS_DEBUG_STREAM("motor acceleration for drive " << i << ": " << m_wheels[i].drive.max_accel_enc_s << " ticks/s^2");
+			}
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
 
