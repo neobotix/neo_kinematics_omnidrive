@@ -214,9 +214,12 @@ public:
 			m_node_handle.param("steer" + std::to_string(i) + "/torque_constant", m_wheels[i].steer.torque_constant, 0.);
 
 			double drive_ticks_per_m = m_wheels[i].drive.enc_ticks_per_rev * m_wheels[i].drive.gear_ratio / (2 * M_PI * wheel_radius);
-			if (max_drive_acc != 0) {
-				m_wheels[i].drive.max_accel_enc_s = max_drive_acc * drive_ticks_per_m;
-				ROS_DEBUG_STREAM("motor acceleration for drive " << i << ": " << m_wheels[i].drive.max_accel_enc_s << " ticks/s^2");
+			if (max_drive_acc > 0 && drive_ticks_per_m > 0) {
+				m_wheels[i].drive.max_accel_enc_s = std::min(
+					static_cast<int32_t>(max_drive_acc * drive_ticks_per_m),
+					m_wheels[i].drive.max_accel_enc_s
+				);
+				ROS_INFO_STREAM("motor acceleration for drive " << i << ": " << m_wheels[i].drive.max_accel_enc_s << " ticks/s^2");
 			}
 			m_wheels[i].home_angle = M_PI * m_wheels[i].home_angle / 180.;
 		}
@@ -764,7 +767,7 @@ private:
 			// check for timeout
 			if((now - wheel.steer.homing_start_time).toSec() > 20)
 			{
-				ROS_WARN_STREAM("Homeing timeout on motor " << wheel.steer.joint_name << ", restarting ...");				
+				ROS_WARN_STREAM("Homeing timeout on motor " << wheel.steer.joint_name << ", restarting ...");
 
 				arm_homing(wheel.steer);
 			}
@@ -1727,4 +1730,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-
