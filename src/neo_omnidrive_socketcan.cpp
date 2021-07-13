@@ -1239,15 +1239,25 @@ private:
 		}
 		else
 		{
-			status.message = "";
-			bool first = true;
-			for (const auto &problem : problems)
-			{
-				if (!first) {
-					status.message += ", ";
+			if (motor.curr_status & (1 << 6)) {
+				// If a motor failure is latched, the status message will typically be very long
+				// without containing useful extra information,
+				// e.g. "state: motor failure, status: failure latched, latched motor failure: ..."
+				// Instead, in this special case, let's just report "motor failure latched: ..."
+				status.message = "motor failure latched: " + motor_failure_register_to_string(motor.curr_motor_failure);
+			} else {
+				// Construct the status message by concatenating all individual problems,
+				// separated by commata.
+				status.message = "";
+				bool first = true;
+				for (const auto &problem : problems)
+				{
+					if (!first) {
+						status.message += ", ";
+					}
+					first = false;
+					status.message += problem;
 				}
-				first = false;
-				status.message += problem;
 			}
 			status.level = diagnostic_msgs::DiagnosticStatus::ERROR;
 		}
@@ -1484,10 +1494,27 @@ private:
 
 		if(motor_failure & (1 << 2)) { return "feedback loss"; }
 		if(motor_failure & (1 << 3)) { return "peak current exceeded"; }
+		if(motor_failure & (1 << 6)) { return "hall sensors changed at same time"; }
 		if(motor_failure & (1 << 7)) { return "speed track error"; }
 		if(motor_failure & (1 << 8)) { return "position track error"; }
+		if(motor_failure & (1 << 9)) { return "inconsistent database"; }
+		if(motor_failure & (1 << 10)) { return "too large difference in ECAM table"; }
+		if(motor_failure & (1 << 11)) { return "heartbeat failure"; }
+		if(motor_failure & (1 << 12))  {
+			// servo drive fault according to bits 13..15
+			uint8_t servo_drive_fault = (motor_failure >> 13) & 0x07;
+			if (servo_drive_fault == 1) { return "undervoltage"; }
+			if (servo_drive_fault == 2) { return "overvoltage"; }
+			if (servo_drive_fault == 5) { return "short circuit"; }
+			if (servo_drive_fault == 6) { return "overtemperature"; }
+		}
+		if(motor_failure & (1 << 16)) { return "failed to find electrical zero"; }
 		if(motor_failure & (1 << 17)) { return "speed limit exceeded"; }
+		if(motor_failure & (1 << 18)) { return "stack overflow"; }
+		if(motor_failure & (1 << 19)) { return "CPU exception"; }
 		if(motor_failure & (1 << 21)) { return "motor stuck"; }
+		if(motor_failure & (1 << 22)) { return "position limit exceeded"; }
+		if(motor_failure & (1 << 29)) { return "cannot start motor"; }
 
 		return "motor failure code " + std::to_string(motor_failure);
 	}
