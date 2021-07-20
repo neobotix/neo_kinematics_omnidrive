@@ -12,13 +12,18 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 find_package(catkin REQUIRED
         COMPONENTS
+            angles
             cmake_modules
+            diagnostic_msgs
             dynamic_reconfigure
-            roscpp
-            tf
+            nav_msgs
             neo_srvs
             neo_msgs
             neo_common
+            roscpp
+            sensor_msgs
+            tf
+            trajectory_msgs
         )
 
 include_directories(
@@ -34,12 +39,17 @@ include_directories(
 catkin_package(
     INCLUDE_DIRS include
     CATKIN_DEPENDS
+        angles
+        diagnostic_msgs
         dynamic_reconfigure
-        roscpp
-		tf
+        nav_msgs
+        neo_common
+        neo_msgs
         neo_srvs
-		neo_msgs
-		neo_common
+        roscpp
+        sensor_msgs
+        tf
+        trajectory_msgs
 )
 
 add_executable(neo_omnidrive_node src/neo_omnidrive_node.cpp)
